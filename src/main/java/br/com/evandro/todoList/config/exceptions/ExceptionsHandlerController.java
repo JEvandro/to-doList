@@ -1,11 +1,13 @@
-package br.com.evandro.todoList.exceptions;
+package br.com.evandro.todoList.config.exceptions;
 
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
+import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
+import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -81,6 +83,11 @@ public class ExceptionsHandlerController {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity handlerDataIntegrityViolationException(DataIntegrityViolationException e){
         return ResponseEntity.badRequest().body(new ErrorResponseDTO("Id do usuário é obrigatório"));
+    }
+
+    @ExceptionHandler(MyAuthenticationException.class)
+    public ResponseEntity handlerMyAuthenticationException(MyAuthenticationException e){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponseDTO(e.getMessage()));
     }
 
 }

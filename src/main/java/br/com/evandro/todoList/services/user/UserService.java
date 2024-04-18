@@ -10,6 +10,7 @@ import br.com.evandro.todoList.dto.user.UserResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ public class UserService {
     @Autowired
     TaskRepository taskRepository;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     public UserEntity executeCreate(UserRequestDTO userRequestDTO){
 
         var user = this.userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(
@@ -33,11 +37,13 @@ public class UserService {
 
         if(user.isPresent()) throw new UserFoundException("Usuário com este username e/ou email já existe");
 
+        var password = passwordEncoder.encode(userRequestDTO.password());
+
         return this.userRepository.save(new UserEntity(
                 userRequestDTO.name(),
                 userRequestDTO.username(),
                 userRequestDTO.email(),
-                userRequestDTO.password())
+                password)
         );
     }
 
@@ -54,13 +60,10 @@ public class UserService {
            new UserNotFoundException("Não há usuário cadastrado com este id: " + userId)
         );
 
-        System.out.println("Passei pelo exceção notFound");
-
         taskRepository.findByUserId(userId).forEach( (task) -> {
             taskRepository.deleteById(task.getId());
         });
 
-        System.out.println("Passei pela comando de exclusão da lista de task do usuario");
         this.userRepository.deleteById(userId);
     }
 
