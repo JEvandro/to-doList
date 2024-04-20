@@ -1,18 +1,25 @@
 package br.com.evandro.todoList.services.user;
 
-import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
-import br.com.evandro.todoList.dto.user.AuthUserDTO;
+import br.com.evandro.todoList.dto.user.AuthUserRequestDTO;
+import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
 import br.com.evandro.todoList.repositories.UserRepository;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.security.sasl.AuthenticationException;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class AuthUserService {
+
+    @Value("${security.token.secret.user}")
+    private String secret;
 
     @Autowired
     UserRepository userRepository;
@@ -20,14 +27,23 @@ public class AuthUserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    public UserEntity executeAuthUser(AuthUserDTO authUserDTO){
-        var user = userRepository.findByUsernameIgnoringCase(authUserDTO.username())
+    public AuthUserResponseDTO executeAuthUser(AuthUserRequestDTO authUserRequestDTO){
+        var user = userRepository.findByUsernameIgnoringCase(authUserRequestDTO.username())
                 .orElseThrow( () -> new UserNotFoundException("Username e/ou password estão incorretos"));
 
-        if(!passwordEncoder.matches(authUserDTO.password(), user.getPassword()))
+        if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword()))
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
 
-        return user;
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        var expiresAt = Instant.now().plus(Duration.ofHours(2));
+
+        var token = JWT.create()
+                .withIssuer(user.getName())
+                .withSubject(user.getId().toString())
+                .withExpiresAt(expiresAt)
+                .sign(algorithm);
+
+        return new AuthUserResponseDTO(token, expiresAt.toEpochMilli());
     }
 
 }

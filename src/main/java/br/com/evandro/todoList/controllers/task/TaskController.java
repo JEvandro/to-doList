@@ -2,6 +2,7 @@ package br.com.evandro.todoList.controllers.task;
 
 import br.com.evandro.todoList.dto.task.TaskRequestDTO;
 import br.com.evandro.todoList.services.task.TaskService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,10 @@ public class TaskController {
     TaskService taskService;
 
     @PostMapping("")
-    public ResponseEntity create(@Valid @RequestBody TaskRequestDTO requestDTO){
-        var result = taskService.executeCreate(requestDTO);
+    public ResponseEntity create(@Valid @RequestBody TaskRequestDTO requestDTO, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+
+        var result = taskService.executeCreate(requestDTO, UUID.fromString(userId.toString()));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

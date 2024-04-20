@@ -20,14 +20,13 @@ public class TaskService {
     @Autowired
     TaskRepository taskRepository;
 
-    public TaskResponseDTO executeCreate(TaskRequestDTO requestDTO){
+    public TaskResponseDTO executeCreate(TaskRequestDTO requestDTO, UUID userId){
         var verifyTask = this.taskRepository.findByDescriptionIgnoringCaseAndUserId(
-                requestDTO.description(),
-                requestDTO.userId());
+                requestDTO.description(), userId);
 
         if(verifyTask.isPresent()) throw new TaskFoundException("Esta tarefa já está cadastrada para este usuário");
 
-        var task = taskRepository.save(new TaskEntity(requestDTO.description(), requestDTO.userId()));
+        var task = taskRepository.save(new TaskEntity(requestDTO.description(), userId));
         return new TaskResponseDTO(task.getDescription(), task.getCreatedAt(), task.getUserId());
     }
 

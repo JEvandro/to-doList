@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.UUID;
 
-public record TaskRequestDTO(@NotBlank String description, UUID userId) {
+public record TaskRequestDTO(@NotBlank String description) {
 }
