@@ -35,7 +35,7 @@ public class AuthUserService {
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
 
         Algorithm algorithm = Algorithm.HMAC256(secret);
-        var expiresAt = Instant.now().plus(Duration.ofHours(2));
+        var expiresAt = Instant.now().plus(Duration.ofMinutes(30));
 
         var token = JWT.create()
                 .withIssuer(user.getName())

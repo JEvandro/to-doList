@@ -2,6 +2,7 @@ package br.com.evandro.todoList.controllers.user;
 
 import br.com.evandro.todoList.dto.user.UserRequestDTO;
 import br.com.evandro.todoList.services.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,15 +31,17 @@ public class UserController {
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity delete(@PathVariable UUID userId){
-        userService.executeDelete(userId);
+    @DeleteMapping("/delete")
+    public ResponseEntity delete(HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        userService.executeDelete(UUID.fromString(userId.toString()));
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{userId}/mytasks")
-    public ResponseEntity getAllTasks(@PathVariable UUID userId){
-        var result = userService.executeGetAllTasks(userId);
+    @GetMapping("/mytasks")
+    public ResponseEntity getAllTasks(HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        var result = userService.executeGetAllTasks(UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);
     }
 
