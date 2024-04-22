@@ -1,6 +1,7 @@
 package br.com.evandro.todoList.controllers.user;
 
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.UserRequestDTO;
 import br.com.evandro.todoList.dto.user.UserResponseDTO;
@@ -40,7 +41,11 @@ public class UserController {
                             schema = @Schema(implementation = UserEntity.class)
                     )
             }),
-            @ApiResponse(responseCode = "409", description = "Usuário com este username e/ou email já existe")
+            @ApiResponse(responseCode = "409", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
     })
     public ResponseEntity create(@Valid @RequestBody UserRequestDTO request){
         var result = userService.executeCreate(request);
@@ -57,7 +62,11 @@ public class UserController {
                             schema = @Schema(implementation = UserResponseDTO.class)
                     )
             }),
-            @ApiResponse(responseCode = "404", description = "User not Found")
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
     })
     public ResponseEntity get(@PathVariable String username){
         var result = userService.executeGet(username);
@@ -70,7 +79,11 @@ public class UserController {
     @Operation(summary = "Remoção do usuário", description = "Rota responsável por excluir o usuário e suas informações juntamente com as tasks criadas por ele")
     @ApiResponses({
             @ApiResponse(responseCode = "204"),
-            @ApiResponse(responseCode = "404", description = "User not Found")
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
     })
     public ResponseEntity delete(HttpServletRequest request){
         var userId = request.getAttribute("userId");
@@ -86,6 +99,11 @@ public class UserController {
             @ApiResponse(responseCode = "200", content = {
                     @Content(
                             array = @ArraySchema(schema = @Schema(implementation = AllTasksResponseDTO.class))
+                    )
+            }),
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
             })
     })

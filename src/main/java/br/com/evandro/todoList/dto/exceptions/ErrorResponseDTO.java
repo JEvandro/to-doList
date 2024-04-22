@@ -1,4 +1,10 @@
 package br.com.evandro.todoList.dto.exceptions;
 
-public record ErrorResponseDTO(String message) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record ErrorResponseDTO(
+
+        @Schema(example = "Mensagem de erro e da causa")
+        String message
+){
 }
