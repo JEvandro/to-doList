@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 @Service
 public class AuthUserService {
@@ -40,6 +41,7 @@ public class AuthUserService {
         var token = JWT.create()
                 .withIssuer(user.getName())
                 .withSubject(user.getId().toString())
+                .withClaim("roles", Arrays.asList("CANDIDATE"))
                 .withExpiresAt(expiresAt)
                 .sign(algorithm);
 

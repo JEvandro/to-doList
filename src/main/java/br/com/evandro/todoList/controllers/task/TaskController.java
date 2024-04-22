@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class TaskController {
     TaskService taskService;
 
     @PostMapping("")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity create(@Valid @RequestBody TaskRequestDTO requestDTO, HttpServletRequest request){
         var userId = request.getAttribute("userId");
 
@@ -27,18 +29,21 @@ public class TaskController {
     }
 
     @PatchMapping("/update/{id}")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity update(@PathVariable UUID id, @RequestBody String description){
         var result = taskService.executeUpdate(description, id);
         return ResponseEntity.ok().body(result);
     }
 
     @PatchMapping("/update/{id}/completed")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity updateCompleted(@PathVariable UUID id){
         var result = taskService.executeUpdateCompleted(id);
         return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity delete(@PathVariable UUID id){
         taskService.executeDelete(id);
         return ResponseEntity.noContent().build();
