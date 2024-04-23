@@ -1,9 +1,11 @@
 package br.com.evandro.todoList.controllers.task;
 
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
+import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.*;
 import br.com.evandro.todoList.services.task.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,6 +44,11 @@ public class TaskController {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
+            }),
+            @ApiResponse(responseCode = "406", content = {
+                    @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
+                    )
             })
     })
     public ResponseEntity create(@Valid @RequestBody TaskRequestDTO requestDTO, HttpServletRequest request){
@@ -62,6 +69,11 @@ public class TaskController {
             @ApiResponse(responseCode = "404", content = {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "406", content = {
+                    @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
                     )
             })
     })

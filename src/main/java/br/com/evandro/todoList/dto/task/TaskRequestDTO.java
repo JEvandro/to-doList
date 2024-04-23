@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record TaskRequestDTO(
         @NotBlank
-        @Schema(example = "Resolver a lista de matemática em grupo", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "Resolver a lista de matemática", requiredMode = Schema.RequiredMode.REQUIRED)
         String description
 ){
 }

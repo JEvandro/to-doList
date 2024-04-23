@@ -2,6 +2,8 @@ package br.com.evandro.todoList.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDateTime;
+
 public record UserResponseDTO(
 
         @Schema(example = "Jose Evandro")
@@ -13,8 +15,8 @@ public record UserResponseDTO(
         @Schema(example = "jose@gmail.com")
         String email,
 
-        @Schema(example = "$2a$10$/1HQFwkluYFXzARyhvW4ueh/vGEYj.uUOt7cTRI9weqrjb/tQEO6q")
-        String password
+        @Schema(example = "2024-04-22T16:59:10.811838")
+        LocalDateTime createdAt
 
 ){
 }

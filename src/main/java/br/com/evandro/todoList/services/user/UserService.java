@@ -52,7 +52,7 @@ public class UserService {
             new UserNotFoundException("Usuário não existe")
         );
 
-        return new UserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getPassword());
+        return new UserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
     }
 
     public void executeDelete(UUID userId){

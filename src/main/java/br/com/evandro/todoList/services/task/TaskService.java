@@ -3,11 +3,14 @@ package br.com.evandro.todoList.services.task;
 import br.com.evandro.todoList.domains.task.TaskEntity;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
+import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.dto.task.CompletedTaskResponseDTO;
 import br.com.evandro.todoList.dto.task.TaskRequestDTO;
 import br.com.evandro.todoList.dto.task.TaskResponseDTO;
 import br.com.evandro.todoList.dto.task.UpdateTaskResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
+import br.com.evandro.todoList.repositories.UserRepository;
+import jakarta.persistence.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +23,19 @@ public class TaskService {
     @Autowired
     TaskRepository taskRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
     public TaskResponseDTO executeCreate(TaskRequestDTO requestDTO, UUID userId){
         var verifyTask = this.taskRepository.findByDescriptionIgnoringCaseAndUserId(
                 requestDTO.description(), userId);
 
         if(verifyTask.isPresent()) throw new TaskFoundException("Esta tarefa já está cadastrada para este usuário");
 
-        var task = taskRepository.save(new TaskEntity(requestDTO.description(), userId));
-        return new TaskResponseDTO(task.getDescription(), task.getCreatedAt(), task.getUserId());
+        var task = this.taskRepository.save(new TaskEntity(requestDTO.description(), userId));
+        var user = this.userRepository.findById(userId).get();
+
+        return new TaskResponseDTO(task.getDescription(), task.getCreatedAt(), user.getUsername());
     }
 
 

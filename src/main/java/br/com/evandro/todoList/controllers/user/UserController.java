@@ -2,6 +2,7 @@ package br.com.evandro.todoList.controllers.user;
 
 import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
+import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.UserRequestDTO;
 import br.com.evandro.todoList.dto.user.UserResponseDTO;
@@ -44,6 +45,11 @@ public class UserController {
             @ApiResponse(responseCode = "409", content = {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "406", content = {
+                    @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
                     )
             })
     })
