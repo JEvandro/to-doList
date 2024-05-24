@@ -1,16 +1,12 @@
 package br.com.evandro.todoList.services.task;
 
 import br.com.evandro.todoList.domains.task.TaskEntity;
+import br.com.evandro.todoList.domains.task.exceptionsTask.TaskAccessNotPermittedException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
-import br.com.evandro.todoList.domains.user.UserEntity;
-import br.com.evandro.todoList.dto.task.CompletedTaskResponseDTO;
-import br.com.evandro.todoList.dto.task.TaskRequestDTO;
-import br.com.evandro.todoList.dto.task.TaskResponseDTO;
-import br.com.evandro.todoList.dto.task.UpdateTaskResponseDTO;
+import br.com.evandro.todoList.dto.task.*;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
-import jakarta.persistence.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,9 +34,22 @@ public class TaskService {
         return new TaskResponseDTO(task.getDescription(), task.getCreatedAt(), user.getUsername());
     }
 
+    public AllTasksResponseDTO executeGet(UUID taskId, UUID userId){
+        var task = this.findTask(taskId);
+        this.verifyAccessToTask(userId, this.findTask(taskId));
 
-    public UpdateTaskResponseDTO executeUpdate(String description, UUID id){
+        return new AllTasksResponseDTO(
+                task.getId(),
+                task.getDescription(),
+                task.isCompleted(),
+                task.getCreatedAt(),
+                task.getUpdateAt());
+
+    }
+
+    public UpdateTaskResponseDTO executeUpdate(String description, UUID id, UUID userId){
         var task = this.findTask(id);
+        this.verifyAccessToTask(userId, task);
 
         task.setDescription(description);
         task.setUpdateAt(LocalDateTime.now());
@@ -49,13 +58,15 @@ public class TaskService {
         return new UpdateTaskResponseDTO(task.getDescription(), task.getCreatedAt(), task.getUpdateAt());
     }
 
-    public void executeDelete(UUID id){
-        this.findTask(id);
+    public void executeDelete(UUID id, UUID userId){
+        this.verifyAccessToTask(userId, this.findTask(id));
         this.taskRepository.deleteById(id);
     }
 
-    public CompletedTaskResponseDTO executeUpdateCompleted(UUID id){
+    public CompletedTaskResponseDTO executeUpdateCompleted(UUID id, UUID userId){
         var task = this.findTask(id);
+        this.verifyAccessToTask(userId,task);
+
         task.setCompleted(true);
         taskRepository.save(task);
 
@@ -66,6 +77,12 @@ public class TaskService {
         return taskRepository.findById(id).orElseThrow(() ->
                 new TaskNotFoundException("Não há tarefa cadastrada com este id: " + id)
         );
+    }
+
+    private void verifyAccessToTask(UUID userId, TaskEntity task){
+        if(!taskRepository.findByUserId(userId).contains(task)){
+            throw new TaskAccessNotPermittedException("O id da tarefa passada não pertence a sua lista de tarefas");
+        }
     }
 
 }

@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/auth")
 public class AuthUserController {
 
     @Autowired
     AuthUserService authUserService;
 
-    @PostMapping("/auth")
+    @PostMapping("/signin")
     @Tag(name = "Autenticação", description = "Autenticação do usuário")
     @Operation(summary = "Autenticação do usuário", description = "Rota responsável por receber o login e senha do usuário e autenticar")
     @ApiResponses({

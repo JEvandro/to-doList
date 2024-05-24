@@ -1,5 +1,6 @@
 package br.com.evandro.todoList.config.exceptions;
 
+import br.com.evandro.todoList.domains.task.exceptionsTask.TaskAccessNotPermittedException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
@@ -88,6 +89,11 @@ public class ExceptionsHandlerController {
     @ExceptionHandler(MyAuthenticationException.class)
     public ResponseEntity handlerMyAuthenticationException(MyAuthenticationException e){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(TaskAccessNotPermittedException.class)
+    public ResponseEntity handlerTaskAccessNotPermitted(TaskAccessNotPermittedException e){
+        return ResponseEntity.badRequest().body(new ErrorResponseDTO(e.getMessage()));
     }
 
 }

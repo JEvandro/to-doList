@@ -4,8 +4,9 @@ import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
-import br.com.evandro.todoList.dto.user.UserRequestDTO;
-import br.com.evandro.todoList.dto.user.UserResponseDTO;
+import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
+import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
 import br.com.evandro.todoList.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -27,7 +28,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @Tag(name = "Usuário", description = "Informações do Usuário e suas tasks")
 public class UserController {
 
@@ -39,7 +40,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", content = {
                     @Content(
-                            schema = @Schema(implementation = UserEntity.class)
+                            schema = @Schema(implementation = CreateUserResponseDTO.class)
                     )
             }),
             @ApiResponse(responseCode = "409", content = {
@@ -53,7 +54,7 @@ public class UserController {
                     )
             })
     })
-    public ResponseEntity create(@Valid @RequestBody UserRequestDTO request){
+    public ResponseEntity create(@Valid @RequestBody CreateUserRequestDTO request){
         var result = userService.executeCreate(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -65,7 +66,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
                     @Content(
-                            schema = @Schema(implementation = UserResponseDTO.class)
+                            schema = @Schema(implementation = GetUserResponseDTO.class)
                     )
             }),
             @ApiResponse(responseCode = "404", content = {
@@ -113,7 +114,7 @@ public class UserController {
                     )
             })
     })
-    public ResponseEntity getAllTasks(HttpServletRequest request){
+    public ResponseEntity getAllTasks(HttpServletRequest request) {
         var userId = request.getAttribute("userId");
         var result = userService.executeGetAllTasks(UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);

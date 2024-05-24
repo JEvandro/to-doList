@@ -5,8 +5,9 @@ import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
-import br.com.evandro.todoList.dto.user.UserRequestDTO;
-import br.com.evandro.todoList.dto.user.UserResponseDTO;
+import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
+import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,30 +30,35 @@ public class UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    public UserEntity executeCreate(UserRequestDTO userRequestDTO){
+    public CreateUserResponseDTO executeCreate(CreateUserRequestDTO createUserRequestDTO){
 
         var user = this.userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(
-                userRequestDTO.username(),
-                userRequestDTO.email());
+                createUserRequestDTO.username(),
+                createUserRequestDTO.email());
 
         if(user.isPresent()) throw new UserFoundException("Usuário com este username e/ou email já existe");
 
-        var password = passwordEncoder.encode(userRequestDTO.password());
+        var password = passwordEncoder.encode(createUserRequestDTO.password());
 
-        return this.userRepository.save(new UserEntity(
-                userRequestDTO.name(),
-                userRequestDTO.username(),
-                userRequestDTO.email(),
+        var userCreate =  this.userRepository.save(new UserEntity(
+                createUserRequestDTO.name(),
+                createUserRequestDTO.username(),
+                createUserRequestDTO.email(),
                 password)
+        );
+
+        return new CreateUserResponseDTO(userCreate.getName(),
+                userCreate.getUsername(),
+                userCreate.getEmail()
         );
     }
 
-    public UserResponseDTO executeGet(String username){
+    public GetUserResponseDTO executeGet(String username){
         var user = this.userRepository.findByUsernameIgnoringCase(username).orElseThrow(() ->
             new UserNotFoundException("Usuário não existe")
         );
 
-        return new UserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
+        return new GetUserResponseDTO(user.getId(),user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
     }
 
     public void executeDelete(UUID userId){

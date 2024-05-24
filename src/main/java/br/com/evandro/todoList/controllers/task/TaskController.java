@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 @SecurityRequirement(name = "jwt_auth")
 @Tag(name = "Tarefas", description = "Criação, deleção e atualização de tarefas")
 public class TaskController {
@@ -49,6 +49,11 @@ public class TaskController {
                     @Content(
                             array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
                     )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
             })
     })
     public ResponseEntity create(@Valid @RequestBody TaskRequestDTO requestDTO, HttpServletRequest request){
@@ -57,7 +62,33 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @PatchMapping("/update/{id}")
+    @GetMapping("{taskId}")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @Operation(summary = "Detalhes de uma tarefa", description = "Rota responsável por buscar todas as informações de uma tarefa específica do usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(
+                            schema = @Schema(implementation = AllTasksResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
+    })
+    public ResponseEntity get(@PathVariable UUID taskId, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        var result = taskService.executeGet(taskId, UUID.fromString(userId.toString()));
+        return ResponseEntity.ok().body(result);
+    }
+
+    @PatchMapping("/{taskId}")
     @PreAuthorize("hasRole('CANDIDATE')")
     @Operation(summary = "Atualização de tarefa", description = "Rota responsável por atualizar a decrição da tarefa")
     @ApiResponses({
@@ -75,14 +106,20 @@ public class TaskController {
                     @Content(
                             array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
                     )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
             })
     })
-    public ResponseEntity update(@PathVariable UUID id, @Valid @RequestBody UpdateTaskRequestDTO request){
-        var result = taskService.executeUpdate(request.description(), id);
+    public ResponseEntity update(@PathVariable UUID taskId, @Valid @RequestBody UpdateTaskRequestDTO updateRequest, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        var result = taskService.executeUpdate(updateRequest.description(), taskId, UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);
     }
 
-    @PatchMapping("/update/{id}/completed")
+    @PatchMapping("/{taskId}/complete")
     @PreAuthorize("hasRole('CANDIDATE')")
     @Operation(summary = "Atualização de tarefa completada", description = "Rota responsável por atualizar a informação de se a tarefa foi completada")
     @ApiResponses({
@@ -95,14 +132,20 @@ public class TaskController {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
             })
     })
-    public ResponseEntity updateCompleted(@PathVariable UUID id){
-        var result = taskService.executeUpdateCompleted(id);
+    public ResponseEntity updateCompleted(@PathVariable UUID taskId, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        var result = taskService.executeUpdateCompleted(taskId, UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{taskId}")
     @PreAuthorize("hasRole('CANDIDATE')")
     @Operation(summary = "Remoção de tarefa", description = "Rota responsável por deletar a tarefa")
     @ApiResponses({
@@ -111,10 +154,16 @@ public class TaskController {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
             })
     })
-    public ResponseEntity delete(@PathVariable UUID id){
-        taskService.executeDelete(id);
+    public ResponseEntity delete(@PathVariable UUID taskId, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        taskService.executeDelete(taskId, UUID.fromString(userId.toString()));
         return ResponseEntity.noContent().build();
     }
 }

@@ -6,17 +6,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
-public record UserRequestDTO(
+public record CreateUserRequestDTO(
         @NotBlank
-        @Schema(example = "Jose Evandro", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "admin", requiredMode = Schema.RequiredMode.REQUIRED)
         String name,
         @NotBlank
         @Pattern(regexp = "\\S+", message = "O campo [username] não pode conter espaço em branco")
-        @Schema(example = "joseevandro", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "admin", requiredMode = Schema.RequiredMode.REQUIRED)
         String username,
         @NotBlank
         @Email(message = "O campo [Email] deve conter um e-mail válido")
-        @Schema(example = "jose@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "admin@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
         String email,
         @NotBlank
         @Length(min = 8, max = 100, message = "O campo [password] deve conter de 8 carateres até 100 caracateres no máximo")

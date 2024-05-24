@@ -13,7 +13,7 @@ public record TaskResponseDTO(
         @Schema(example = "2024-04-22T16:59:10.811838")
         LocalDateTime createdAt,
 
-        @Schema(example = "joseevandro")
+        @Schema(example = "admin")
         String username
 ) {
 }

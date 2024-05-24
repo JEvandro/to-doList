@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.Length;
 public record AuthUserRequestDTO(
         @NotBlank
         @Pattern(regexp = "\\S+", message = "O campo [username] não pode conter espaço em branco")
-        @Schema(example = "joseevandro",requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "admin",requiredMode = Schema.RequiredMode.REQUIRED)
         String username,
 
         @NotBlank
