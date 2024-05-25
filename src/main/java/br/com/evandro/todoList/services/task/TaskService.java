@@ -36,7 +36,7 @@ public class TaskService {
 
     public AllTasksResponseDTO executeGet(UUID taskId, UUID userId){
         var task = this.findTask(taskId);
-        this.verifyAccessToTask(userId, this.findTask(taskId));
+        this.verifyAccessToTask(userId, task);
 
         return new AllTasksResponseDTO(
                 task.getId(),
