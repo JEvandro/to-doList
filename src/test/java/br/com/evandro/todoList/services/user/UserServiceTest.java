@@ -7,6 +7,8 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
+import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +43,8 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    private UUID userId = UUID.randomUUID();
 
     @Test
     @DisplayName("should not be able create an user with user already exist")
@@ -85,6 +89,7 @@ public class UserServiceTest {
 
         var result = userService.executeCreate(createUser);
 
+        assertThat(result).isInstanceOf(CreateUserResponseDTO.class);
         assertThat(result).hasFieldOrProperty("username");
         assertNotNull(result.username());
 
@@ -103,7 +108,6 @@ public class UserServiceTest {
     @Test
     @DisplayName("should be able get information user")
     public void should_be_able_get_information_user(){
-        var userId = UUID.randomUUID();
         var username = "teste";
 
         var userInformation = new UserEntity();
@@ -113,6 +117,7 @@ public class UserServiceTest {
 
         var result = userService.executeGet(username);
 
+        assertThat(result).isInstanceOf(GetUserResponseDTO.class);
         assertThat(result).hasFieldOrProperty("id");
         assertNotNull(result.id());
 
@@ -131,7 +136,6 @@ public class UserServiceTest {
     @Test
     @DisplayName("should not be able get all tasks of the user if not exist task")
     public void should_not_be_able_get_all_tasks_of_the_user_if_not_exist_task(){
-        var userId = UUID.randomUUID();
         when(taskRepository.findByUserId(userId)).thenReturn(List.of(new TaskEntity()));
 
         try {
@@ -144,8 +148,6 @@ public class UserServiceTest {
     @Test
     @DisplayName("should be able get all tasks of the user")
     public void should_be_able_get_all_tasks_of_the_user(){
-        var userId = UUID.randomUUID();
-
         List<TaskEntity> taskEntityList = new ArrayList<>();
         for(int i=0; i<3; i++){
             var id = UUID.randomUUID();
