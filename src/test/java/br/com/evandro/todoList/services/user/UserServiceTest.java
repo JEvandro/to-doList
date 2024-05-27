@@ -51,9 +51,8 @@ public class UserServiceTest {
     public void should_not_be_able_create_an_user_with_user_already_exist(){
         var username = "teste1";
         var email = "teste1@gmail.com";
-        var user = new UserEntity(null, username, email, null);
 
-        when(userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(username,email)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(username,email)).thenReturn(Optional.of(new UserEntity()));
 
         try {
             userService.executeCreate(new CreateUserRequestDTO(null, username,email, null));

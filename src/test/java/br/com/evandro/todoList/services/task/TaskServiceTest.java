@@ -15,16 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
@@ -48,11 +45,7 @@ public class TaskServiceTest {
     public void should_not_be_able_create_a_task_with_same_description_in_the_same_user(){
         var task = new TaskRequestDTO("teste");
 
-        var taskAlreadyExist = new TaskEntity();
-        taskAlreadyExist.setDescription(task.description());
-        taskAlreadyExist.setUserId(userId);
-
-        when(taskRepository.findByDescriptionIgnoringCaseAndUserId(task.description(), userId)).thenReturn(Optional.of(taskAlreadyExist));
+        when(taskRepository.findByDescriptionIgnoringCaseAndUserId(task.description(), userId)).thenReturn(Optional.of(new TaskEntity()));
 
         try {
             taskService.executeCreate(task, userId);
@@ -68,11 +61,8 @@ public class TaskServiceTest {
         var taskCreate = new TaskEntity();
         taskCreate.setCreatedAt(LocalDateTime.now());
 
-        var user = new UserEntity();
-        user.setUsername("teste");
-
         when(taskRepository.save(new TaskEntity(null, userId))).thenReturn(taskCreate);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(new UserEntity()));
 
         var result = taskService.executeCreate(new TaskRequestDTO(null), userId);
 
