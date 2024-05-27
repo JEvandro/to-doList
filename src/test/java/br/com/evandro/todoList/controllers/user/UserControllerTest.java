@@ -6,7 +6,6 @@ import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import br.com.evandro.todoList.utils.TestUtils;
-import io.swagger.v3.core.jackson.MediaTypeSerializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
@@ -41,6 +39,13 @@ public class UserControllerTest {
     private MockMvc mvc;
 
     private UserEntity user = new UserEntity(
+            "TESTE",
+            "TESTE",
+            "TESTE@GMAIL.COM",
+            "0123456789"
+    );
+
+    private CreateUserRequestDTO request = new CreateUserRequestDTO(
             "TESTE",
             "TESTE",
             "TESTE@GMAIL.COM",
@@ -78,14 +83,6 @@ public class UserControllerTest {
     public void should_not_be_able_create_a_user_if_already_exist() throws Exception {
         userRepository.saveAndFlush(user);
 
-        var request = new CreateUserRequestDTO(
-                "TESTE",
-                "TESTE",
-                "TESTE@GMAIL.COM",
-                "0123456789"
-        );
-
-
         mvc.perform(
                 MockMvcRequestBuilders.post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,6 +90,17 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isConflict()
         );
 
+    }
+
+    @Test
+    @DisplayName("should be able create a new user")
+    public void should_be_able_create_a_new_user() throws Exception {
+        mvc.perform(
+                MockMvcRequestBuilders.post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.ObjectToJSON(request)))
+                .andExpect(MockMvcResultMatchers.status().isCreated()
+        );
     }
 
     @Test
@@ -106,6 +114,19 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
                 .andExpect(MockMvcResultMatchers.status().isNotFound()
+        );
+    }
+
+    @Test
+    @DisplayName("should be able get information user")
+    public void should_be_able_get_information_user() throws Exception {
+        user = userRepository.saveAndFlush(user);
+
+        mvc.perform(
+                MockMvcRequestBuilders.get("/api/users/{username}", user.getUsername())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isOk()
         );
     }
 
@@ -125,9 +146,24 @@ public class UserControllerTest {
     }
 
     @Test
+    @DisplayName("should be able delete an user")
+    public void should_be_able_delete_an_user() throws Exception {
+        userRepository.saveAndFlush(user);
+
+        mvc.perform(
+                MockMvcRequestBuilders.delete("/api/users/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("userId", user.getId())
+                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isNoContent()
+        );
+    }
+
+    @Test
     @DisplayName("should not be able get list of tasks of the user if not exist task create")
     public void should_not_be_able_get_list_of_tasks_of_the_user_if_not_exist_task_create() throws Exception {
         userRepository.saveAndFlush(user);
+     // taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
 
         mvc.perform(
                 MockMvcRequestBuilders.get("/api/users/mytasks")
@@ -135,6 +171,21 @@ public class UserControllerTest {
                 .requestAttr("userId", user.getId())
                 .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
                 .andExpect(MockMvcResultMatchers.status().isNotFound()
+        );
+    }
+
+    @Test
+    @DisplayName("should be able get list of tasks of the user")
+    public void should_be_able_get_list_of_tasks_of_the_user() throws Exception {
+        userRepository.saveAndFlush(user);
+        taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
+
+        mvc.perform(
+                MockMvcRequestBuilders.get("/api/users/mytasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("userId", user.getId())
+                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isOk()
         );
     }
 
