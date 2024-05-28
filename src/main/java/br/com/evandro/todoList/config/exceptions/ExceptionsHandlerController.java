@@ -77,8 +77,8 @@ public class ExceptionsHandlerController {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity handlerHttpMessageNotReadableException(HttpMessageNotReadableException e){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ErrorResponseDTO("Não há usuário cadastrado com o id passado:"));
+        return ResponseEntity.badRequest().body(
+                new ErrorResponseDTO("O argumento deve ser passado obrigatoriamente"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

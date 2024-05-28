@@ -29,10 +29,10 @@ import java.util.UUID;
 public class TaskController {
 
     @Autowired
-    TaskService taskService;
+    private TaskService taskService;
 
     @PostMapping("")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Cadastro de tarefa", description = "Rota responsável por cadastrar a tarefa do usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", content = {
@@ -63,7 +63,7 @@ public class TaskController {
     }
 
     @GetMapping("{taskId}")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Detalhes de uma tarefa", description = "Rota responsável por buscar todas as informações de uma tarefa específica do usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
@@ -89,8 +89,8 @@ public class TaskController {
     }
 
     @PatchMapping("/{taskId}")
-    @PreAuthorize("hasRole('CANDIDATE')")
-    @Operation(summary = "Atualização de tarefa", description = "Rota responsável por atualizar a decrição da tarefa")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Atualização de tarefa", description = "Rota responsável por atualizar a descrição da tarefa")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
                     @Content(
@@ -120,7 +120,7 @@ public class TaskController {
     }
 
     @PatchMapping("/{taskId}/complete")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Atualização de tarefa completada", description = "Rota responsável por atualizar a informação de se a tarefa foi completada")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
@@ -146,7 +146,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{taskId}")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Remoção de tarefa", description = "Rota responsável por deletar a tarefa")
     @ApiResponses({
             @ApiResponse(responseCode = "204"),

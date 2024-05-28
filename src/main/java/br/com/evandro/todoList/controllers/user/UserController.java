@@ -60,7 +60,7 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
     @Operation(summary = "Perfil do usuário", description = "Rota responsável por mostrar as informações do usuário")
     @ApiResponses({
@@ -81,7 +81,7 @@ public class UserController {
     }
 
     @DeleteMapping("/delete")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
     @Operation(summary = "Remoção do usuário", description = "Rota responsável por excluir o usuário e suas informações juntamente com as tasks criadas por ele")
     @ApiResponses({
@@ -99,7 +99,7 @@ public class UserController {
     }
 
     @GetMapping("/mytasks")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
     @Operation(summary = "Listagem de tarefas do usuário", description = "Rota responsável por mostrar todas as tarefas criadas pelo usuário")
     @ApiResponses({

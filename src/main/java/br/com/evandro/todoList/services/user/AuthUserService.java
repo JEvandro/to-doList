@@ -41,7 +41,7 @@ public class AuthUserService {
         var token = JWT.create()
                 .withIssuer(user.getName())
                 .withSubject(user.getId().toString())
-                .withClaim("roles", Arrays.asList("CANDIDATE"))
+                .withClaim("roles", Arrays.asList("USER"))
                 .withExpiresAt(expiresAt)
                 .sign(algorithm);
 

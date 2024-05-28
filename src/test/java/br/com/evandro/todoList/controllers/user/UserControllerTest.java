@@ -107,7 +107,7 @@ public class UserControllerTest {
     @DisplayName("should not be able get information user if user not exist")
     public void should_not_be_able_get_information_user_if_user_not_exist() throws Exception {
         String username = "TESTE1";
-        var user = userRepository.saveAndFlush(this.user);
+        user = userRepository.saveAndFlush(this.user);
 
         mvc.perform(
                 MockMvcRequestBuilders.get("/api/users/{username}", username)

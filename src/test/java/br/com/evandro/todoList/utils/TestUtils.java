@@ -29,7 +29,7 @@ public class TestUtils {
         var token = JWT.create()
                 .withIssuer("TESTE")
                 .withSubject(id.toString())
-                .withClaim("roles", Arrays.asList("CANDIDATE"))
+                .withClaim("roles", Arrays.asList("USER"))
                 .withExpiresAt(expiresAt)
                 .sign(algorithm);
 
