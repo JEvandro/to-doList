@@ -71,10 +71,10 @@ public class TaskControllerTest {
 
         mvc.perform(
                 MockMvcRequestBuilders.post("/api/tasks")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.ObjectToJSON(new TaskRequestDTO("TASK_TESTE")))
-                .requestAttr("userId", user.getId())
-                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.ObjectToJSON(new TaskRequestDTO("TASK_TESTE")))
+                        .requestAttr("userId", user.getId())
+                        .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
                 .andExpect(MockMvcResultMatchers.status().isConflict()
         );
     }
@@ -110,6 +110,21 @@ public class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("should be create a task")
+    public void should_be_create_a_task() throws Exception {
+        user = userRepository.saveAndFlush(user);
+
+        mvc.perform(
+                        MockMvcRequestBuilders.post("/api/tasks")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.ObjectToJSON(new TaskRequestDTO("TASK_TESTE")))
+                                .requestAttr("userId", user.getId())
+                                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isCreated()
+                );
+    }
+
+    @Test
     @DisplayName("should not be able get information of the task if not exist")
     public void should_not_be_able_get_information_of_the_task_if_not_exist() throws Exception {
         user = userRepository.saveAndFlush(user);
@@ -136,6 +151,21 @@ public class TaskControllerTest {
                                 .requestAttr("userId", user.getId())
                                 .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest()
+                );
+    }
+
+    @Test
+    @DisplayName("should be able get information of the task")
+    public void should_be_able_get_information_of_the_task() throws Exception {
+        user = userRepository.saveAndFlush(user);
+        var task = taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
+
+        mvc.perform(
+                        MockMvcRequestBuilders.get("/api/tasks/{taskId}", task.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .requestAttr("userId", user.getId())
+                                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isOk()
                 );
     }
 
@@ -205,6 +235,22 @@ public class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("should be able update task")
+    public void should_be_able_update_task() throws Exception {
+        user = userRepository.saveAndFlush(user);
+        var task = taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
+
+        mvc.perform(
+                        MockMvcRequestBuilders.get("/api/tasks/{taskId}", task.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.ObjectToJSON(new UpdateTaskRequestDTO("UPDATE_TASK_TESTE")))
+                                .requestAttr("userId", user.getId())
+                                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isOk()
+                );
+    }
+
+    @Test
     @DisplayName("should not be able update task to complete if task not exist")
     public void should_not_be_able_update_a_task_to_complete_if_task_not_exist() throws Exception {
         user = userRepository.saveAndFlush(user);
@@ -236,6 +282,21 @@ public class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("should be able update task to complete")
+    public void should_be_able_update_task_to_complete() throws Exception {
+        user = userRepository.saveAndFlush(user);
+        var task = taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
+
+        mvc.perform(
+                        MockMvcRequestBuilders.patch("/api/tasks/{taskId}/complete", task.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .requestAttr("userId", user.getId())
+                                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isOk()
+                );
+    }
+
+    @Test
     @DisplayName("should not be able delete a task of another user")
     public void should_not_be_able_delete_a_task_of_another_user() throws Exception {
         user = userRepository.saveAndFlush(user);
@@ -248,6 +309,22 @@ public class TaskControllerTest {
                                 .requestAttr("userId", user.getId())
                                 .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest()
+                );
+
+    }
+
+    @Test
+    @DisplayName("should be able delete a task")
+    public void should_be_able_delete_a_task() throws Exception {
+        user = userRepository.saveAndFlush(user);
+        var task = taskRepository.saveAndFlush(new TaskEntity("TASK_TESTE", user.getId()));
+
+        mvc.perform(
+                        MockMvcRequestBuilders.delete("/api/tasks/{taskId}", task.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .requestAttr("userId", user.getId())
+                                .header("Authorization", TestUtils.generateToken(user.getId(), "USER_123@#")))
+                .andExpect(MockMvcResultMatchers.status().isNoContent()
                 );
 
     }
