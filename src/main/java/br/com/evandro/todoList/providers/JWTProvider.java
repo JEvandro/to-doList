@@ -1,5 +1,6 @@
 package br.com.evandro.todoList.providers;
 
+import br.com.evandro.todoList.domains.user.UserEntity;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -7,8 +8,13 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+
 @Service
-public class JWTProvider {
+public class JWTProvider{
 
     @Value("${security.token.secret.user}")
     private String secret;
@@ -29,5 +35,27 @@ public class JWTProvider {
             return null;
         }
     }
+
+    public String generateToken(UserEntity user){
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        var expiresAt = Instant.now().plus(Duration.ofMinutes(10));
+
+        return JWT.create()
+                .withIssuer(user.getName())
+                .withSubject(user.getId().toString())
+                .withClaim("roles", Arrays.asList("USER"))
+                .withExpiresAt(expiresAt)
+                .sign(algorithm);
+    }
+
+    public Date extractExpiresAt(String token){
+        DecodedJWT decodedJWT = valideToken(token);
+        if (decodedJWT != null) {
+            return decodedJWT.getExpiresAt();
+        }
+        return null;
+    }
+
+
 
 }

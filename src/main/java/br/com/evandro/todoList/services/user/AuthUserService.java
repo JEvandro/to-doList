@@ -4,6 +4,7 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationExcep
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.user.AuthUserRequestDTO;
 import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
+import br.com.evandro.todoList.providers.JWTProvider;
 import br.com.evandro.todoList.repositories.UserRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -26,6 +27,9 @@ public class AuthUserService {
     UserRepository userRepository;
 
     @Autowired
+    JWTProvider jwtProvider;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
 
     public AuthUserResponseDTO executeAuthUser(AuthUserRequestDTO authUserRequestDTO){
@@ -35,17 +39,9 @@ public class AuthUserService {
         if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword()))
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
 
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        var expiresAt = Instant.now().plus(Duration.ofMinutes(30));
+        var token = jwtProvider.generateToken(user);
 
-        var token = JWT.create()
-                .withIssuer(user.getName())
-                .withSubject(user.getId().toString())
-                .withClaim("roles", Arrays.asList("USER"))
-                .withExpiresAt(expiresAt)
-                .sign(algorithm);
-
-        return new AuthUserResponseDTO(token, expiresAt.toEpochMilli());
+        return new AuthUserResponseDTO(token, jwtProvider.extractExpiresAt(token));
     }
 
 }

@@ -9,6 +9,7 @@ import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
 import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
 import br.com.evandro.todoList.dto.user.GetOtherUserResponseDTO;
 import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
+import br.com.evandro.todoList.providers.JWTProvider;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class UserService {
 
     @Autowired
     TaskRepository taskRepository;
+
+    @Autowired
+    JWTProvider jwtProvider;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -48,9 +52,14 @@ public class UserService {
                 password)
         );
 
+        var token = jwtProvider.generateToken(userCreate);
+        var expiresAt = jwtProvider.extractExpiresAt(token);
+
         return new CreateUserResponseDTO(userCreate.getName(),
                 userCreate.getUsername(),
-                userCreate.getEmail()
+                userCreate.getEmail(),
+                token,
+                expiresAt
         );
     }
 
