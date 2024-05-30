@@ -8,6 +8,7 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
 import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.GetOtherUserResponseDTO;
 import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -98,7 +100,7 @@ public class UserServiceTest {
     @DisplayName("should not be able get information user if user not exist")
     public void should_not_be_able_get_information_user_if_user_not_exist(){
         try {
-            userService.executeGet(null);
+            userService.executeGet(null, null);
         } catch (Exception e) {
             assertThat(e).isInstanceOf(UserNotFoundException.class);
         }
@@ -106,7 +108,7 @@ public class UserServiceTest {
 
     @Test
     @DisplayName("should be able get information user")
-    public void should_be_able_get_information_user(){
+    public void should_be_able_get_information_user() throws NoSuchFieldException {
         var username = "teste";
 
         var userInformation = new UserEntity();
@@ -114,12 +116,27 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameIgnoringCase(username)).thenReturn(Optional.of(userInformation));
 
-        var result = userService.executeGet(username);
+        var result = userService.executeGet(username, userId);
 
         assertThat(result).isInstanceOf(GetUserResponseDTO.class);
         assertThat(result).hasFieldOrProperty("id");
-        assertNotNull(result.id());
+        assertNotNull(result.getClass().getDeclaredField("id"));
 
+    }
+
+    @Test
+    @DisplayName("should be able get information another user")
+    public void should_be_able_get_information_another_user() throws NoSuchFieldException {
+        var anotherUser = new UserEntity(UUID.randomUUID(),"", "teste1", "", "", LocalDateTime.now());
+        var username = "teste1";
+
+        when(userRepository.findByUsernameIgnoringCase(username)).thenReturn(Optional.of(anotherUser));
+
+        var result = userService.executeGet(username, userId);
+
+        assertThat(result).isInstanceOf(GetOtherUserResponseDTO.class);
+        assertThat(result).hasOnlyFields("name", "username", "email", "createdAt");
+        assertNotNull(result.getClass().getDeclaredField("createdAt"));
     }
 
     @Test

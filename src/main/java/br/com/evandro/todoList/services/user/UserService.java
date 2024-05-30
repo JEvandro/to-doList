@@ -7,6 +7,7 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
 import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.GetOtherUserResponseDTO;
 import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
@@ -53,10 +54,13 @@ public class UserService {
         );
     }
 
-    public GetUserResponseDTO executeGet(String username){
+    public Record executeGet(String username, UUID userId){
         var user = this.userRepository.findByUsernameIgnoringCase(username).orElseThrow(() ->
             new UserNotFoundException("Usuário não existe")
         );
+
+        if(!user.getId().equals(userId))
+            return new GetOtherUserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
 
         return new GetUserResponseDTO(user.getId(),user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
     }

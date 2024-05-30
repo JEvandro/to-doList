@@ -1,6 +1,5 @@
 package br.com.evandro.todoList.controllers.user;
 
-import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
@@ -52,6 +51,11 @@ public class UserController {
                     @Content(
                             array = @ArraySchema(schema = @Schema(implementation = HandlerExceptionMethodNotValidDTO.class))
                     )
+            }),
+            @ApiResponse(responseCode = "400", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
             })
     })
     public ResponseEntity create(@Valid @RequestBody CreateUserRequestDTO request){
@@ -64,7 +68,8 @@ public class UserController {
     @SecurityRequirement(name = "jwt_auth")
     @Operation(summary = "Perfil do usuário", description = "Rota responsável por mostrar as informações do usuário")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
+            @ApiResponse(responseCode = "200",content = {
+
                     @Content(
                             schema = @Schema(implementation = GetUserResponseDTO.class)
                     )
@@ -75,8 +80,9 @@ public class UserController {
                     )
             })
     })
-    public ResponseEntity get(@PathVariable String username){
-        var result = userService.executeGet(username);
+    public ResponseEntity get(@PathVariable String username, HttpServletRequest request){
+        var userId = request.getAttribute("userId");
+        var result = userService.executeGet(username, UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);
     }
 
