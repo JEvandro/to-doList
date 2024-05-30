@@ -4,6 +4,7 @@ import br.com.evandro.todoList.domains.task.exceptionsTask.TaskAccessNotPermitte
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
+import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
@@ -94,6 +95,11 @@ public class ExceptionsHandlerController {
     @ExceptionHandler(TaskAccessNotPermittedException.class)
     public ResponseEntity handlerTaskAccessNotPermitted(TaskAccessNotPermittedException e){
         return ResponseEntity.badRequest().body(new ErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(UpdatePasswordException.class)
+    public ResponseEntity handlerUpdatePassword(UpdatePasswordException e){
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ErrorResponseDTO(e.getMessage()));
     }
 
 }

@@ -3,9 +3,7 @@ package br.com.evandro.todoList.controllers.user;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
-import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
-import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
-import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
+import br.com.evandro.todoList.dto.user.*;
 import br.com.evandro.todoList.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -124,6 +122,18 @@ public class UserController {
         var userId = request.getAttribute("userId");
         var result = userService.executeGetAllTasks(UUID.fromString(userId.toString()));
         return ResponseEntity.ok().body(result);
+    }
+
+    @PatchMapping("/password")
+    @PreAuthorize("hasRole('USER')")
+    @SecurityRequirement(name = "jwt_auth")
+    public ResponseEntity updatePassword(
+            @Valid @RequestBody UpdatePasswordRequestDTO updatePasswordRequestDTO,
+            HttpServletRequest request
+    ){
+        var userId = request.getAttribute("userId");
+        userService.executeUpdatePassword(updatePasswordRequestDTO, UUID.fromString(userId.toString()));
+        return ResponseEntity.ok().build();
     }
 
 

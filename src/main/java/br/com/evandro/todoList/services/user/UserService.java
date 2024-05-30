@@ -2,13 +2,11 @@ package br.com.evandro.todoList.services.user;
 
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
-import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
-import br.com.evandro.todoList.dto.user.CreateUserResponseDTO;
-import br.com.evandro.todoList.dto.user.GetOtherUserResponseDTO;
-import br.com.evandro.todoList.dto.user.GetUserResponseDTO;
+import br.com.evandro.todoList.dto.user.*;
 import br.com.evandro.todoList.providers.JWTProvider;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -53,13 +52,11 @@ public class UserService {
         );
 
         var token = jwtProvider.generateToken(userCreate);
-        var expiresAt = jwtProvider.extractExpiresAt(token);
 
         return new CreateUserResponseDTO(userCreate.getName(),
                 userCreate.getUsername(),
                 userCreate.getEmail(),
-                token,
-                expiresAt
+                token
         );
     }
 
@@ -105,4 +102,20 @@ public class UserService {
         return listAllTasks;
     }
 
+    public void executeUpdatePassword(UpdatePasswordRequestDTO updatePasswordRequestDTO, UUID userId) {
+        var user = userRepository.findById(userId);
+
+        if(!passwordEncoder.matches(updatePasswordRequestDTO.oldPassword(), user.get().getPassword()))
+            throw new UpdatePasswordException("A antiga senha está errada!");
+
+        if(updatePasswordRequestDTO.oldPassword().equals(updatePasswordRequestDTO.newPassword()))
+            throw new UpdatePasswordException("A nova senha deve ser diferente da antiga!");
+
+        if(!updatePasswordRequestDTO.newPassword().equals(updatePasswordRequestDTO.confirmPassword()))
+            throw new UpdatePasswordException("A nova senha e a senha de confirmação devem ser iguais.");
+
+        var password = passwordEncoder.encode(updatePasswordRequestDTO.newPassword());
+        user.get().setPassword(password);
+        userRepository.save(user.get());
+    }
 }

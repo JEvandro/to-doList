@@ -41,7 +41,7 @@ public class AuthUserService {
 
         var token = jwtProvider.generateToken(user);
 
-        return new AuthUserResponseDTO(token, jwtProvider.extractExpiresAt(token));
+        return new AuthUserResponseDTO(token);
     }
 
 }
