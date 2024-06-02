@@ -7,7 +7,8 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.*;
-import br.com.evandro.todoList.providers.JWTProvider;
+import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
+import br.com.evandro.todoList.providers.JWTProviderToken;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -29,7 +29,10 @@ public class UserService {
     TaskRepository taskRepository;
 
     @Autowired
-    JWTProvider jwtProvider;
+    JWTProviderToken jwtProviderToken;
+
+    @Autowired
+    JWTProviderRefreshToken jwtProviderRefreshToken;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -51,12 +54,14 @@ public class UserService {
                 password)
         );
 
-        var token = jwtProvider.generateToken(userCreate);
+        var token = jwtProviderToken.generateToken(userCreate);
+        var refreshToken = jwtProviderRefreshToken.generateRefreshToken(userCreate.getId());
 
         return new CreateUserResponseDTO(userCreate.getName(),
                 userCreate.getUsername(),
                 userCreate.getEmail(),
-                token
+                token,
+                refreshToken.getId()
         );
     }
 

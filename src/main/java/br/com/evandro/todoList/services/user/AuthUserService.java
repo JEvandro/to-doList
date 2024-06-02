@@ -1,21 +1,18 @@
 package br.com.evandro.todoList.services.user;
 
+import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.user.AuthUserRequestDTO;
 import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
-import br.com.evandro.todoList.providers.JWTProvider;
+import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
+import br.com.evandro.todoList.providers.JWTProviderToken;
+import br.com.evandro.todoList.repositories.RefreshTokenRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
 
 @Service
 public class AuthUserService {
@@ -27,7 +24,13 @@ public class AuthUserService {
     UserRepository userRepository;
 
     @Autowired
-    JWTProvider jwtProvider;
+    RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    JWTProviderToken jwtProviderToken;
+
+    @Autowired
+    JWTProviderRefreshToken jwtProviderRefreshToken;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -39,9 +42,10 @@ public class AuthUserService {
         if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword()))
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
 
-        var token = jwtProvider.generateToken(user);
+        var token = jwtProviderToken.generateToken(user);
+        var refreshToken = jwtProviderRefreshToken.generateRefreshToken(user.getId());
 
-        return new AuthUserResponseDTO(token);
+        return new AuthUserResponseDTO(token, refreshToken.getId());
     }
 
 }

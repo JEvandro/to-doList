@@ -1,6 +1,7 @@
 package br.com.evandro.todoList.domains.user;
 
 
+import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

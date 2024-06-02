@@ -1,7 +1,8 @@
 package br.com.evandro.todoList.config.security;
 
-import br.com.evandro.todoList.providers.JWTProvider;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
+import br.com.evandro.todoList.providers.JWTProviderToken;
+import br.com.evandro.todoList.repositories.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,14 +16,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.UUID;
 
 @Component
 @EnableMethodSecurity
 public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
-    JWTProvider jwtProvider;
+    private JWTProviderToken jwtProviderToken;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -30,7 +31,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if(header != null){
-            var token = jwtProvider.valideToken(header);
+            var token = jwtProviderToken.valideToken(header);
             if(token == null){
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
