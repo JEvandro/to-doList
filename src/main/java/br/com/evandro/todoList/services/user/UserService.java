@@ -81,6 +81,8 @@ public class UserService {
            new UserNotFoundException("Não há usuário cadastrado com este id: " + userId)
         );
 
+        jwtProviderRefreshToken.deleteByUser(userId);
+
         taskRepository.findByUserId(userId).forEach( (task) -> {
             taskRepository.deleteById(task.getId());
         });

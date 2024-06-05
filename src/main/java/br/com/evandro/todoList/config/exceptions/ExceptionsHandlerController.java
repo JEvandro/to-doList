@@ -79,7 +79,7 @@ public class ExceptionsHandlerController {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity handlerHttpMessageNotReadableException(HttpMessageNotReadableException e){
         return ResponseEntity.badRequest().body(
-                new ErrorResponseDTO("O argumento deve ser passado obrigatoriamente"));
+                new ErrorResponseDTO("O argumento deve ser passado obrigatoriamente e de forma correta"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

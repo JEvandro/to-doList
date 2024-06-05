@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -20,6 +20,12 @@ public class JWTProviderRefreshToken {
 
     @Value("${security.token.secret.user}")
     private String secret;
+
+    @Value("${jwt.refresh.expiry}")
+    private Long refreshTokenExpiry;
+
+    @Value("${jwt.token.expiry}")
+    private Long tokenExpiry;
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
@@ -33,26 +39,39 @@ public class JWTProviderRefreshToken {
                 new MyAuthenticationException("Token is invalid!")
         );
 
-        if(Instant.now().isAfter(Instant.ofEpochSecond(refreshTokenEntity.getExpiresIn())))
-            throw new MyAuthenticationException("Token is invalid!");
+        verifyExpirationTokenRefreshToken(refreshTokenEntity);
 
         Algorithm algorithm = Algorithm.HMAC256(secret);
-        var expiresAt = Instant.now().plus(Duration.ofMinutes(2));
+        var expiresAt = Instant.now().plusMillis(tokenExpiry);
 
         var token = JWT.create()
                 .withIssuer(refreshTokenEntity.getUser().getUsername())
                 .withSubject(refreshTokenEntity.getUserId().toString())
                 .withClaim("roles", Arrays.asList("USER"))
-                .withExpiresAt(expiresAt)
+                .withExpiresAt(Date.from(expiresAt))
                 .sign(algorithm);
 
-        return new RefreshTokenResponseDTO(token);
+        var newRefreshToken = generateRefreshToken(refreshTokenEntity.getUserId()).getId();
+        refreshTokenRepository.delete(refreshTokenEntity);
+
+        return new RefreshTokenResponseDTO(token, newRefreshToken);
 
     }
 
     public RefreshTokenEntity generateRefreshToken(UUID userId){
-        var expiresAt = Instant.now().plus(Duration.ofHours(1));
-        return refreshTokenRepository.save(new RefreshTokenEntity(expiresAt.getEpochSecond(), userId));
+        var expiresAt = Instant.now().plusMillis(refreshTokenExpiry);
+        return refreshTokenRepository.save(new RefreshTokenEntity(expiresAt.toEpochMilli(), userId));
+    }
+
+    public void verifyExpirationTokenRefreshToken(RefreshTokenEntity refreshToken) {
+        if (Instant.ofEpochMilli(refreshToken.getExpiresIn()).isBefore(Instant.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new MyAuthenticationException("Refresh token was expired. Please make a new signin request");
+        }
+    }
+
+    public void deleteByUser(UUID userId){
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
 }

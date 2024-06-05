@@ -19,6 +19,9 @@ public class JWTProviderToken {
     @Value("${security.token.secret.user}")
     private String secret;
 
+    @Value("${jwt.token.expiry}")
+    private Long tokenExpiry;
+
     public DecodedJWT valideToken(String token){
         token = token.replace("Bearer ", "");
 
@@ -38,13 +41,13 @@ public class JWTProviderToken {
 
     public String generateToken(UserEntity user){
         Algorithm algorithm = Algorithm.HMAC256(secret);
-        var expiresAt = Instant.now().plus(Duration.ofMinutes(10));
+        var expiresAt = Instant.now().plusMillis(tokenExpiry);
 
         return JWT.create()
                 .withIssuer(user.getName())
                 .withSubject(user.getId().toString())
                 .withClaim("roles", Arrays.asList("USER"))
-                .withExpiresAt(expiresAt)
+                .withExpiresAt(Date.from(expiresAt))
                 .sign(algorithm);
     }
 

@@ -4,6 +4,7 @@ package br.com.evandro.todoList.controllers.user;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.user.AuthUserRequestDTO;
 import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
+import br.com.evandro.todoList.dto.user.RefreshTokenRequestDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.services.user.AuthUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,9 +55,9 @@ public class AuthUserController {
         return ResponseEntity.ok().body(result);
     }
 
-    @PostMapping("/refresh-token/{refreshToken}")
-    public ResponseEntity authRefreshUser(@PathVariable UUID refreshToken){
-        var result = jwtProviderRefreshToken.valideRefreshToken(refreshToken);
+    @PostMapping("/refresh-token")
+    public ResponseEntity authRefreshUser(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO){
+        var result = jwtProviderRefreshToken.valideRefreshToken(refreshTokenRequestDTO.refreshToken());
         return ResponseEntity.ok().body(result);
     }
 

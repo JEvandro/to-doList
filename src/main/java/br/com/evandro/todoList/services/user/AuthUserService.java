@@ -24,9 +24,6 @@ public class AuthUserService {
     UserRepository userRepository;
 
     @Autowired
-    RefreshTokenRepository refreshTokenRepository;
-
-    @Autowired
     JWTProviderToken jwtProviderToken;
 
     @Autowired
