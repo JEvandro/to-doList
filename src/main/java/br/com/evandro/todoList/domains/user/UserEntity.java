@@ -49,11 +49,14 @@ public class UserEntity {
     @Schema(example = "2024-04-22T16:59:10.811838")
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    private LocalDateTime updateAt;
+
     public UserEntity(String name, String username, String email, String password){
-        this.name = name;
-        this.username = username;
-        this.email = email;
-        this.password = password;
+        setName(name);
+        setUsername(username);
+        setEmail(email);
+        setPassword(password);
     }
 
 }

@@ -77,11 +77,9 @@ public class UserService {
     }
 
     public void executeDelete(UUID userId){
-        this.userRepository.findById(userId).orElseThrow( () ->
-           new UserNotFoundException("Não há usuário cadastrado com este id: " + userId)
-        );
+        findUser(userId);
 
-        jwtProviderRefreshToken.deleteByUser(userId);
+        jwtProviderRefreshToken.deleteByUserId(userId);
 
         taskRepository.findByUserId(userId).forEach( (task) -> {
             taskRepository.deleteById(task.getId());
@@ -110,9 +108,9 @@ public class UserService {
     }
 
     public void executeUpdatePassword(UpdatePasswordRequestDTO updatePasswordRequestDTO, UUID userId) {
-        var user = userRepository.findById(userId);
+        var user = findUser(userId);
 
-        if(!passwordEncoder.matches(updatePasswordRequestDTO.oldPassword(), user.get().getPassword()))
+        if(!passwordEncoder.matches(updatePasswordRequestDTO.oldPassword(), user.getPassword()))
             throw new UpdatePasswordException("A antiga senha está errada!");
 
         if(updatePasswordRequestDTO.oldPassword().equals(updatePasswordRequestDTO.newPassword()))
@@ -122,7 +120,45 @@ public class UserService {
             throw new UpdatePasswordException("A nova senha e a senha de confirmação devem ser iguais.");
 
         var password = passwordEncoder.encode(updatePasswordRequestDTO.newPassword());
-        user.get().setPassword(password);
-        userRepository.save(user.get());
+        user.setPassword(password);
+        userRepository.save(user);
+    }
+
+    public Object executeUpdateProfile(UpdateProfileUserRequestDTO updateProfileUserRequestDTO, UUID userId) {
+        var user = findUser(userId);
+        boolean x = false;
+
+        if(!updateProfileUserRequestDTO.name().isEmpty()) {
+            user.setName(updateProfileUserRequestDTO.name());
+            x = true;
+        }
+
+        if(!updateProfileUserRequestDTO.username().isEmpty()) {
+            var index = updateProfileUserRequestDTO.username().indexOf(" ");
+            var username = updateProfileUserRequestDTO.username().substring(0,index);
+            user.setUsername(username);
+            x = true;
+        }
+
+        if(!updateProfileUserRequestDTO.email().isEmpty()) {
+            user.setEmail(updateProfileUserRequestDTO.email());
+            x = true;
+        }
+
+        if(x) {user = userRepository.save(user);}
+
+        return new UpdateProfileUserResponseDTO(
+                user.getName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getUpdateAt()
+        );
+    }
+
+    private UserEntity findUser(UUID userId){
+        return userRepository.findById(userId).orElseThrow(() ->
+                new UserNotFoundException("Não exista usuário cadastrado com este id: " + userId)
+        );
     }
 }

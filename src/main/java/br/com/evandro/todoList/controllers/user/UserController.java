@@ -5,6 +5,7 @@ import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.*;
 import br.com.evandro.todoList.services.user.UserService;
+import br.com.evandro.todoList.services.user.UsernameGeneratorUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,6 +33,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    UsernameGeneratorUserService generatorUsernameService;
+
     @PostMapping("")
     @Operation(summary = "Cadastro do usuário", description = "Rota responsável por criar o cadastro de um usuário")
     @ApiResponses({
@@ -58,6 +62,12 @@ public class UserController {
     })
     public ResponseEntity create(@Valid @RequestBody CreateUserRequestDTO request){
         var result = userService.executeCreate(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @GetMapping("/generate-username")
+    public ResponseEntity generateUsername(){
+        var result = generatorUsernameService.generateUniqueUsername();
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -134,6 +144,18 @@ public class UserController {
         var userId = request.getAttribute("userId");
         userService.executeUpdatePassword(updatePasswordRequestDTO, UUID.fromString(userId.toString()));
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/update-profile")
+    @PreAuthorize("hasRole('USER')")
+    @SecurityRequirement(name = "jwt_auth")
+    public ResponseEntity updateProfile(
+            @Valid @RequestBody UpdateProfileUserRequestDTO updateProfileUserRequestDTO,
+            HttpServletRequest request
+    ){
+        var userId = request.getAttribute("userId");
+        var result = userService.executeUpdateProfile(updateProfileUserRequestDTO, UUID.fromString(userId.toString()));
+        return ResponseEntity.ok().body(result);
     }
 
 

@@ -2,6 +2,7 @@ package br.com.evandro.todoList.providers;
 
 import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
+import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.user.RefreshTokenResponseDTO;
 import br.com.evandro.todoList.repositories.RefreshTokenRepository;
 import com.auth0.jwt.JWT;
@@ -70,8 +71,11 @@ public class JWTProviderRefreshToken {
         }
     }
 
-    public void deleteByUser(UUID userId){
-        refreshTokenRepository.deleteByUserId(userId);
+    public void deleteByUserId(UUID userId){
+        var refresh = refreshTokenRepository.findByUserId(userId).orElseThrow(() ->
+            new UserNotFoundException("oi")
+        );
+        refreshTokenRepository.delete(refresh);
     }
 
 }
