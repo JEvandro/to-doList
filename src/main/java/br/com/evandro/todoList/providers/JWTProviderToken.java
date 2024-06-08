@@ -8,7 +8,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -58,7 +57,6 @@ public class JWTProviderToken {
         }
         return null;
     }
-
 
 
 }

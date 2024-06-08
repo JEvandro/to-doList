@@ -73,7 +73,7 @@ public class JWTProviderRefreshToken {
 
     public void deleteByUserId(UUID userId){
         var refresh = refreshTokenRepository.findByUserId(userId).orElseThrow(() ->
-            new UserNotFoundException("oi")
+            new UserNotFoundException("Não existe refresh token para o usuário cadastrado com este id: " + userId)
         );
         refreshTokenRepository.delete(refresh);
     }
