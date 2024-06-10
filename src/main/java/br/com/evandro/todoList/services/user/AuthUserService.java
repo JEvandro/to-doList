@@ -33,29 +33,36 @@ public class AuthUserService {
     private Long resetPasswordTokenExpire;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    JWTProviderToken jwtProviderToken;
+    private JWTProviderToken jwtProviderToken;
 
     @Autowired
-    JWTProviderRefreshToken jwtProviderRefreshToken;
+    private JWTProviderRefreshToken jwtProviderRefreshToken;
 
     @Autowired
-    ResetPasswordTokenRepository resetPasswordTokenRepository;
+    private ResetPasswordTokenRepository resetPasswordTokenRepository;
 
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private LoginUserAttemptService loginUserAttemptService;
 
-    public AuthUserResponseDTO executeAuthUserSignin(AuthUserRequestDTO authUserRequestDTO){
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public AuthUserResponseDTO executeAuthUserSignin(AuthUserRequestDTO authUserRequestDTO, int attempt){
         var user = userRepository.findByUsernameIgnoringCase(authUserRequestDTO.username())
                 .orElseThrow( () -> new UserNotFoundException("Username e/ou password estão incorretos"));
 
-        if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword()))
+        loginUserAttemptService.isBlocked(user);
+
+        if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword())) {
+            loginUserAttemptService.failedLogin(attempt, user);
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
+        }
 
         var token = jwtProviderToken.generateToken(user);
         var refreshToken = jwtProviderRefreshToken.generateRefreshToken(user.getId());
@@ -88,23 +95,24 @@ public class AuthUserService {
                         new TokenInvalidException("Token Inválido!")
                 );
 
-        if (Instant.ofEpochMilli(resetPasswordToken.getExpiresAt()).isBefore(Instant.now()) ) {
+        if (Instant.ofEpochMilli(resetPasswordToken.getExpiresAt()).isBefore(Instant.now()) ){
+            resetPasswordTokenRepository.deleteById(resetPasswordToken.getId());
             throw new TokenInvalidException("Token está expirado! Envie novamente um email");
         }
 
         var user = userRepository.findByEmailIgnoringCase(resetPasswordToken.getEmail())
                 .orElseThrow(() -> new RecuperationEmailNotFound("Email not found"));
 
-        if(resetPasswordRequestDTO.password().equals(user.getPassword()))
+        if(passwordEncoder.matches(resetPasswordRequestDTO.password(), user.getPassword()))
             throw new UpdatePasswordException("A nova senha deve ser diferente da antiga!");
 
-        if(resetPasswordRequestDTO.password().equals(resetPasswordRequestDTO.confirmPassword()))
+        if(!resetPasswordRequestDTO.password().equals(resetPasswordRequestDTO.confirmPassword()))
             throw new UpdatePasswordException("A nova senha e a senha de confirmação devem ser iguais.");
 
         user.setPassword(passwordEncoder.encode(resetPasswordRequestDTO.password()));
         userRepository.save(user);
 
-        resetPasswordTokenRepository.delete(resetPasswordToken);
+        resetPasswordTokenRepository.deleteById(resetPasswordToken.getId());
     }
 
 }

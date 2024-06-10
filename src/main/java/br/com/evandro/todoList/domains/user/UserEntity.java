@@ -1,18 +1,13 @@
 package br.com.evandro.todoList.domains.user;
 
 
-import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -45,6 +40,12 @@ public class UserEntity {
     @Schema(example = "0123456789")
     private String password;
 
+    @Column(name = "user_status")
+    private String userStatus;
+
+    @Column(name = "expires_blocked_at")
+    private Long expiresBlockedAt;
+
     @CreationTimestamp
     @Schema(example = "2024-04-22T16:59:10.811838")
     private LocalDateTime createdAt;
@@ -52,11 +53,21 @@ public class UserEntity {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    public UserEntity(String name, String username, String email, String password){
+    public UserEntity(String name, String username, String email, String password, UserStatusEnum userStatus){
         setName(name);
         setUsername(username);
         setEmail(email);
         setPassword(password);
+        setUserStatus(userStatus);
+    }
+
+    public UserStatusEnum getUserStatus(){
+        return UserStatusEnum.valueOfStatus(userStatus);
+    }
+
+    public void setUserStatus(UserStatusEnum userStatus){
+        if(userStatus != null)
+            this.userStatus = userStatus.getStatus();
     }
 
 }

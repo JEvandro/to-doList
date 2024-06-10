@@ -27,6 +27,8 @@ public class AuthUserController {
     @Autowired
     JWTProviderRefreshToken jwtProviderRefreshToken;
 
+    private int attempt = 0;
+
     @PostMapping("/sign-in")
     @Tag(name = "Autenticação", description = "Autenticação do usuário")
     @Operation(summary = "Autenticação do usuário", description = "Rota responsável por receber o login e senha do usuário e autenticar")
@@ -48,7 +50,8 @@ public class AuthUserController {
             })
     })
     public ResponseEntity authUserSignin(@Valid @RequestBody AuthUserRequestDTO authUserRequestDTO){
-        var result = authUserService.executeAuthUserSignin(authUserRequestDTO);
+        var result = authUserService.executeAuthUserSignin(authUserRequestDTO, attempt++);
+        attempt = 0;
         return ResponseEntity.ok().body(result);
     }
 

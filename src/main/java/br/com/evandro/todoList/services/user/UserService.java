@@ -2,6 +2,7 @@ package br.com.evandro.todoList.services.user;
 
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
@@ -51,7 +52,8 @@ public class UserService {
                 createUserRequestDTO.name(),
                 createUserRequestDTO.username(),
                 createUserRequestDTO.email(),
-                password)
+                password,
+                UserStatusEnum.PENDENT)
         );
 
         var token = jwtProviderToken.generateToken(userCreate);
