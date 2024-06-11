@@ -1,9 +1,7 @@
-package br.com.evandro.todoList.dto.user;
+package br.com.evandro.todoList.dto.user.response;
 
-import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.util.Date;
 import java.util.UUID;
 
 public record AuthUserResponseDTO(

@@ -1,4 +1,4 @@
-package br.com.evandro.todoList.dto.user;
+package br.com.evandro.todoList.dto.user.request;
 
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;

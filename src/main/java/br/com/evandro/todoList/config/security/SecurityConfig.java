@@ -21,13 +21,20 @@ public class SecurityConfig{
             "/swagger-resources/**"
     };
 
+    private static final String requestAuthUser[] = {
+            "/api/auth/reset-password",
+            "/api/auth/forgot-password",
+            "/api/auth/refresh-token",
+            "/api/auth/sign-in"
+    };
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests( auth -> {
                     auth.requestMatchers("/api/users").permitAll()
                             .requestMatchers("/api/users/generate-username").permitAll()
-                            .requestMatchers("/api/auth/**").permitAll()
+                            .requestMatchers(requestAuthUser).permitAll()
                             .requestMatchers(requestSwagger).permitAll();
                     auth.anyRequest().authenticated();
                 })

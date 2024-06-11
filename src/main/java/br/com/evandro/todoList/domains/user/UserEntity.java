@@ -46,6 +46,9 @@ public class UserEntity {
     @Column(name = "expires_blocked_at")
     private Long expiresBlockedAt;
 
+    @Column(name = "token_confirmation")
+    private String tokenConfirmation;
+
     @CreationTimestamp
     @Schema(example = "2024-04-22T16:59:10.811838")
     private LocalDateTime createdAt;

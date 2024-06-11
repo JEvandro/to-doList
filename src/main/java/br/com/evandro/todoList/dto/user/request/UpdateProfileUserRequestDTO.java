@@ -1,8 +1,7 @@
-package br.com.evandro.todoList.dto.user;
+package br.com.evandro.todoList.dto.user.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 public record UpdateProfileUserRequestDTO(

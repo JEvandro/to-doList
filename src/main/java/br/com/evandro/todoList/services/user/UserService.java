@@ -7,7 +7,13 @@ import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordExcepti
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
-import br.com.evandro.todoList.dto.user.*;
+import br.com.evandro.todoList.dto.user.request.CreateUserRequestDTO;
+import br.com.evandro.todoList.dto.user.request.UpdatePasswordRequestDTO;
+import br.com.evandro.todoList.dto.user.request.UpdateProfileUserRequestDTO;
+import br.com.evandro.todoList.dto.user.response.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.GetOtherUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.GetUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.UpdateProfileUserResponseDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.providers.JWTProviderToken;
 import br.com.evandro.todoList.repositories.TaskRepository;
@@ -24,19 +30,25 @@ import java.util.UUID;
 public class UserService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    TaskRepository taskRepository;
+    private TaskRepository taskRepository;
 
     @Autowired
-    JWTProviderToken jwtProviderToken;
+    private JWTProviderToken jwtProviderToken;
 
     @Autowired
-    JWTProviderRefreshToken jwtProviderRefreshToken;
+    private JWTProviderRefreshToken jwtProviderRefreshToken;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private CodeConfirmationService codeConfirmationService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public CreateUserResponseDTO executeCreate(CreateUserRequestDTO createUserRequestDTO){
 
@@ -62,6 +74,7 @@ public class UserService {
         return new CreateUserResponseDTO(userCreate.getName(),
                 userCreate.getUsername(),
                 userCreate.getEmail(),
+                UserStatusEnum.PENDENT.getDescription(),
                 token,
                 refreshToken.getId()
         );

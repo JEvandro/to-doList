@@ -3,16 +3,19 @@ package br.com.evandro.todoList.services.user;
 import br.com.evandro.todoList.domains.resetpassword.ResetPasswordTokenEntity;
 import br.com.evandro.todoList.domains.resetpassword.exceptions.RecuperationEmailNotFound;
 import br.com.evandro.todoList.domains.resetpassword.exceptions.TokenInvalidException;
-import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
-import br.com.evandro.todoList.dto.user.AuthUserRequestDTO;
-import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
-import br.com.evandro.todoList.dto.user.ForgotPasswordRequestDTO;
-import br.com.evandro.todoList.dto.user.ResetPasswordRequestDTO;
+import br.com.evandro.todoList.dto.user.request.AuthUserRequestDTO;
+import br.com.evandro.todoList.dto.user.request.ForgotPasswordRequestDTO;
+import br.com.evandro.todoList.dto.user.request.ResetPasswordRequestDTO;
+import br.com.evandro.todoList.dto.user.request.TokenUserConfirmationRequestDTO;
+import br.com.evandro.todoList.dto.user.response.AuthUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.UserConfirmationResponseDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.providers.JWTProviderToken;
+import br.com.evandro.todoList.repositories.CodeConfirmationRepository;
 import br.com.evandro.todoList.repositories.ResetPasswordTokenRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +32,7 @@ public class AuthUserService {
     @Value("${security.token.secret.user}")
     private String secret;
 
-    @Value("${reset-password.token}")
+    @Value("${reset-password.token.expiry}")
     private Long resetPasswordTokenExpire;
 
     @Autowired
@@ -45,10 +48,13 @@ public class AuthUserService {
     private ResetPasswordTokenRepository resetPasswordTokenRepository;
 
     @Autowired
-    private EmailService emailService;
+    private LoginUserAttemptService loginUserAttemptService;
 
     @Autowired
-    private LoginUserAttemptService loginUserAttemptService;
+    private CodeConfirmationRepository codeConfirmationRepository;
+
+    @Autowired
+    private CodeConfirmationService codeConfirmationService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -70,23 +76,16 @@ public class AuthUserService {
         return new AuthUserResponseDTO(token, refreshToken.getId());
     }
 
-    public void executeAuthUserForgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
+    public ResetPasswordTokenEntity executeAuthUserForgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
         var user = userRepository.findByEmailIgnoringCase(forgotPasswordRequestDTO.email()).orElseThrow(() ->
                 new RecuperationEmailNotFound("Email not found")
         );
 
-        var resetPassword = resetPasswordTokenRepository.save(new ResetPasswordTokenEntity(
+        return resetPasswordTokenRepository.save(new ResetPasswordTokenEntity(
                 UUID.randomUUID().toString(),
                 forgotPasswordRequestDTO.email(),
                 Instant.now().plusMillis(resetPasswordTokenExpire).toEpochMilli())
         );
-
-        String resetUrl = "http://localhost:8080/api/auth/reset-password";
-        emailService.sendSimpleMessage(
-                resetPassword.getEmail(),
-                "Password Reset",
-                "To reset your password, click the link below:\n" + resetUrl
-                );
     }
 
     public void executeAuthUserResetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) {
@@ -115,4 +114,18 @@ public class AuthUserService {
         resetPasswordTokenRepository.deleteById(resetPasswordToken.getId());
     }
 
+    public UserConfirmationResponseDTO executeAuthUserConfirmation(TokenUserConfirmationRequestDTO tokenUserConfirmationRequestDTO, UUID userId) {
+        var code = codeConfirmationRepository.findByCodeAndUserId(tokenUserConfirmationRequestDTO.token(), userId).orElseThrow( () ->
+                new TokenInvalidException("Code Invalid!")
+        );
+
+        var user = code.getUser();
+
+        codeConfirmationService.isExpires(code);
+
+        user.setUserStatus(UserStatusEnum.ACTIVE);
+        codeConfirmationRepository.delete(code);
+
+        return new UserConfirmationResponseDTO(user.getUsername(), UserStatusEnum.ACTIVE.getDescription());
+    }
 }

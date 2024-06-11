@@ -2,20 +2,27 @@ package br.com.evandro.todoList.controllers.user;
 
 
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
-import br.com.evandro.todoList.dto.user.*;
+import br.com.evandro.todoList.dto.user.request.*;
+import br.com.evandro.todoList.dto.user.response.AuthUserResponseDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.services.user.AuthUserService;
+import br.com.evandro.todoList.services.user.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,6 +33,9 @@ public class AuthUserController {
 
     @Autowired
     JWTProviderRefreshToken jwtProviderRefreshToken;
+
+    @Autowired
+    EmailService emailService;
 
     private int attempt = 0;
 
@@ -63,7 +73,8 @@ public class AuthUserController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity authUserForgotPassword(@RequestBody ForgotPasswordRequestDTO forgotPasswordRequestDTO){
-        authUserService.executeAuthUserForgotPassword(forgotPasswordRequestDTO);
+        var resetPassword = authUserService.executeAuthUserForgotPassword(forgotPasswordRequestDTO);
+        emailService.sendMailToForgotPassword(resetPassword);
         return ResponseEntity.ok().build();
     }
 
@@ -71,6 +82,19 @@ public class AuthUserController {
     public ResponseEntity authUserResetPassword(@RequestBody ResetPasswordRequestDTO resetPasswordRequestDTO){
         authUserService.executeAuthUserResetPassword(resetPasswordRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/user-confirmation")
+    @PreAuthorize("hasRole('USER')")
+    @SecurityRequirement(name = "jwt_auth")
+    public ResponseEntity authUserConfirmation(
+            @RequestBody TokenUserConfirmationRequestDTO tokenUserConfirmationRequestDTO,
+            HttpServletRequest request
+    ){
+        var userId = request.getAttribute("userId").toString();
+        emailService.sendMailToUserConfirmation(UUID.fromString(userId));
+        var result = authUserService.executeAuthUserConfirmation(tokenUserConfirmationRequestDTO, UUID.fromString(userId));
+        return ResponseEntity.ok().body(result);
     }
 
 }

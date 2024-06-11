@@ -1,10 +1,11 @@
-package br.com.evandro.todoList.dto.user;
+package br.com.evandro.todoList.dto.user.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
-public record GetOtherUserResponseDTO(
+public record CreateUserResponseDTO(
+
 
         @Schema(example = "admin")
         String name,
@@ -14,9 +15,9 @@ public record GetOtherUserResponseDTO(
 
         @Schema(example = "admin@gmail.com")
         String email,
+        String status,
+        String access_token,
+        UUID refreshToken
 
-        @Schema(example = "2024-04-22T16:59:10.811838")
-        LocalDateTime createdAt
-
-) {
+){
 }

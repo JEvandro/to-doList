@@ -1,4 +1,4 @@
-package br.com.evandro.todoList.dto.user;
+package br.com.evandro.todoList.dto.user.response;
 
 import java.util.UUID;
 

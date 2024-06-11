@@ -3,7 +3,7 @@ package br.com.evandro.todoList.providers;
 import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
-import br.com.evandro.todoList.dto.user.RefreshTokenResponseDTO;
+import br.com.evandro.todoList.dto.user.response.RefreshTokenResponseDTO;
 import br.com.evandro.todoList.repositories.RefreshTokenRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

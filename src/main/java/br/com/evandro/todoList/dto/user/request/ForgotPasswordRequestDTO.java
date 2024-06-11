@@ -1,6 +1,4 @@
-package br.com.evandro.todoList.dto.user;
-
-import java.util.UUID;
+package br.com.evandro.todoList.dto.user.request;
 
 public record ForgotPasswordRequestDTO(
 

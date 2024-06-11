@@ -1,7 +1,5 @@
 package br.com.evandro.todoList.utils;
 
-import br.com.evandro.todoList.domains.user.UserEntity;
-import br.com.evandro.todoList.dto.user.AuthUserResponseDTO;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;

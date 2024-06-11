@@ -2,7 +2,7 @@ package br.com.evandro.todoList.controllers.user;
 
 import br.com.evandro.todoList.domains.task.TaskEntity;
 import br.com.evandro.todoList.domains.user.UserEntity;
-import br.com.evandro.todoList.dto.user.CreateUserRequestDTO;
+import br.com.evandro.todoList.dto.user.request.CreateUserRequestDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import br.com.evandro.todoList.utils.TestUtils;
