@@ -7,6 +7,12 @@ public enum UserStatusEnum {
     PENDENT("P", "PENDENT");
 
     private String status;
+    private String description;
+
+    UserStatusEnum(String status, String description) {
+        setStatus(status);
+        setDescription(description);
+    }
 
     public String getDescription() {
         return description;
@@ -14,13 +20,6 @@ public enum UserStatusEnum {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    private String description;
-
-    UserStatusEnum(String status, String description) {
-        setStatus(status);
-        setDescription(description);
     }
 
     public String getStatus() {

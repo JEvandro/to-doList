@@ -1,12 +1,11 @@
 package br.com.evandro.todoList.domains.resetpassword;
 
+import br.com.evandro.todoList.domains.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -20,14 +19,22 @@ public class ResetPasswordTokenEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String token;
+    private String code;
     private String email;
     private Long expiresAt;
 
-    public ResetPasswordTokenEntity(String token, String email, Long expiresAt){
-        setToken(token);
+    @OneToOne
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private UserEntity user;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    public ResetPasswordTokenEntity(String code, String email, Long expiresAt, UUID userId){
+        setCode(code);
         setEmail(email);
         setExpiresAt(expiresAt);
+        setUserId(userId);
     }
 
 }

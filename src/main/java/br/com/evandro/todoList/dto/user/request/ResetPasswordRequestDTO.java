@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record ResetPasswordRequestDTO(
 
-        UUID token,
+        String code,
         String password,
         String confirmPassword
 

@@ -37,8 +37,6 @@ public class AuthUserController {
     @Autowired
     EmailService emailService;
 
-    private int attempt = 0;
-
     @PostMapping("/sign-in")
     @Tag(name = "Autenticação", description = "Autenticação do usuário")
     @Operation(summary = "Autenticação do usuário", description = "Rota responsável por receber o login e senha do usuário e autenticar")
@@ -60,8 +58,7 @@ public class AuthUserController {
             })
     })
     public ResponseEntity authUserSignin(@Valid @RequestBody AuthUserRequestDTO authUserRequestDTO){
-        var result = authUserService.executeAuthUserSignin(authUserRequestDTO, attempt++);
-        attempt = 0;
+        var result = authUserService.executeAuthUserSignin(authUserRequestDTO);
         return ResponseEntity.ok().body(result);
     }
 
@@ -73,8 +70,7 @@ public class AuthUserController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity authUserForgotPassword(@RequestBody ForgotPasswordRequestDTO forgotPasswordRequestDTO){
-        var resetPassword = authUserService.executeAuthUserForgotPassword(forgotPasswordRequestDTO);
-        emailService.sendMailToForgotPassword(resetPassword);
+        authUserService.executeAuthUserForgotPassword(forgotPasswordRequestDTO.email());
         return ResponseEntity.ok().build();
     }
 
@@ -88,13 +84,28 @@ public class AuthUserController {
     @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
     public ResponseEntity authUserConfirmation(
-            @RequestBody TokenUserConfirmationRequestDTO tokenUserConfirmationRequestDTO,
+            @RequestBody UserConfirmationCodeRequestDTO userConfirmationCodeRequestDTO,
             HttpServletRequest request
     ){
         var userId = request.getAttribute("userId").toString();
-        emailService.sendMailToUserConfirmation(UUID.fromString(userId));
-        var result = authUserService.executeAuthUserConfirmation(tokenUserConfirmationRequestDTO, UUID.fromString(userId));
+        var result = authUserService.executeAuthUserConfirmation(userConfirmationCodeRequestDTO.code(), UUID.fromString(userId));
         return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/send-email/user-confirmation")
+    @PreAuthorize("hasRole('USER')")
+    @SecurityRequirement(name = "jwt_auth")
+    public ResponseEntity authUserConfirmationEmail(HttpServletRequest request){
+        var userId = request.getAttribute("userId").toString();
+        emailService.sendMailToUserConfirmation(UUID.fromString(userId));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/send-email/reset-password")
+    public ResponseEntity authUserResetPasswordEmail(HttpServletRequest request){
+        var userId = request.getAttribute("userId").toString();
+        emailService.sendMailToResetPassword(UUID.fromString(userId));
+        return ResponseEntity.ok().build();
     }
 
 }

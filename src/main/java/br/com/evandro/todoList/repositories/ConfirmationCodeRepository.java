@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CodeConfirmationRepository extends JpaRepository<CodeConfirmationEntity, UUID> {
+public interface ConfirmationCodeRepository extends JpaRepository<CodeConfirmationEntity, UUID> {
 
     Optional<CodeConfirmationEntity> findByCodeAndUserId(String code, UUID userId);
-
+    boolean findByUserId(UUID userId);
 }

@@ -1,6 +1,5 @@
 package br.com.evandro.todoList.services.user;
 
-import br.com.evandro.todoList.domains.resetpassword.ResetPasswordTokenEntity;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,7 @@ public class EmailService {
     private UserRepository userRepository;
 
     @Autowired
-    private CodeConfirmationService codeConfirmationService;
+    private CodeUserService codeUserService;
 
     private void sendSimpleMessage(String to, String subject, String text){
         try {
@@ -39,18 +38,21 @@ public class EmailService {
         }
     }
 
-    public void sendMailToForgotPassword(ResetPasswordTokenEntity resetPassword){
+    public void sendMailToResetPassword(UUID userId){
+        var user= userRepository.findById(userId).get();
+        var code = codeUserService.generateResetPasswordCode(user);
         var resetUrl = "http://localhost:8080/api/auth/reset-password";
         this.sendSimpleMessage(
-                resetPassword.getEmail(),
+                user.getEmail(),
                 "Password Reset",
-                "To reset your password, click the link below:\n" + resetUrl
+                "This is your code for reset password: " + code.getCode() + "\n\n" +
+                        "reset your password, click the link below:\n" + resetUrl
         );
     }
 
     public void sendMailToUserConfirmation(UUID userId){
         var user = userRepository.findById(userId).get();
-        var code = codeConfirmationService.generateRecoveryCode(user);
+        var code = codeUserService.generateConfirmationCode(user);
         var confirmationUrl = "http://localhost:8080/api/auth/user-confirmation";
         this.sendSimpleMessage(
                 user.getEmail(),

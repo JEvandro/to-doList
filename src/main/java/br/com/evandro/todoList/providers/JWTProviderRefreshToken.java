@@ -40,7 +40,7 @@ public class JWTProviderRefreshToken {
                 new MyAuthenticationException("Token is invalid!")
         );
 
-        verifyExpirationTokenRefreshToken(refreshTokenEntity);
+        this.verifyExpirationTokenRefreshToken(refreshTokenEntity);
 
         Algorithm algorithm = Algorithm.HMAC256(secret);
         var expiresAt = Instant.now().plusMillis(tokenExpiry);
@@ -52,7 +52,7 @@ public class JWTProviderRefreshToken {
                 .withExpiresAt(Date.from(expiresAt))
                 .sign(algorithm);
 
-        var newRefreshToken = generateRefreshToken(refreshTokenEntity.getUserId()).getId();
+        var newRefreshToken = this.generateRefreshToken(refreshTokenEntity.getUserId()).getId();
         refreshTokenRepository.delete(refreshTokenEntity);
 
         return new RefreshTokenResponseDTO(token, newRefreshToken);
@@ -65,7 +65,7 @@ public class JWTProviderRefreshToken {
     }
 
     public void verifyExpirationTokenRefreshToken(RefreshTokenEntity refreshToken) {
-        if (Instant.ofEpochMilli(refreshToken.getExpiresIn()).isBefore(Instant.now())) {
+        if (Instant.ofEpochMilli(refreshToken.getExpiresAt()).isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
             throw new MyAuthenticationException("Refresh token was expired. Please make a new signin request");
         }

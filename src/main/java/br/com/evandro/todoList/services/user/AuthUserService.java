@@ -1,29 +1,27 @@
 package br.com.evandro.todoList.services.user;
 
-import br.com.evandro.todoList.domains.resetpassword.ResetPasswordTokenEntity;
 import br.com.evandro.todoList.domains.resetpassword.exceptions.RecuperationEmailNotFound;
-import br.com.evandro.todoList.domains.resetpassword.exceptions.TokenInvalidException;
+import br.com.evandro.todoList.domains.resetpassword.exceptions.CodeInvalidException;
 import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
 import br.com.evandro.todoList.dto.user.request.AuthUserRequestDTO;
-import br.com.evandro.todoList.dto.user.request.ForgotPasswordRequestDTO;
 import br.com.evandro.todoList.dto.user.request.ResetPasswordRequestDTO;
-import br.com.evandro.todoList.dto.user.request.TokenUserConfirmationRequestDTO;
+import br.com.evandro.todoList.dto.user.request.UserConfirmationCodeRequestDTO;
 import br.com.evandro.todoList.dto.user.response.AuthUserResponseDTO;
 import br.com.evandro.todoList.dto.user.response.UserConfirmationResponseDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.providers.JWTProviderToken;
-import br.com.evandro.todoList.repositories.CodeConfirmationRepository;
-import br.com.evandro.todoList.repositories.ResetPasswordTokenRepository;
+import br.com.evandro.todoList.repositories.ConfirmationCodeRepository;
+import br.com.evandro.todoList.repositories.ResetPasswordCodeRepository;
+import br.com.evandro.todoList.repositories.UserAttemptsRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -32,8 +30,11 @@ public class AuthUserService {
     @Value("${security.token.secret.user}")
     private String secret;
 
-    @Value("${reset-password.token.expiry}")
+    @Value("${reset-password.code.expiry}")
     private Long resetPasswordTokenExpire;
+
+    @Autowired
+    private UserAttemptsRepository userAttemptsRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -45,28 +46,33 @@ public class AuthUserService {
     private JWTProviderRefreshToken jwtProviderRefreshToken;
 
     @Autowired
-    private ResetPasswordTokenRepository resetPasswordTokenRepository;
+    private ResetPasswordCodeRepository resetPasswordCodeRepository;
 
     @Autowired
     private LoginUserAttemptService loginUserAttemptService;
 
     @Autowired
-    private CodeConfirmationRepository codeConfirmationRepository;
+    private ConfirmationCodeRepository confirmationCodeRepository;
 
     @Autowired
-    private CodeConfirmationService codeConfirmationService;
+    private CodeUserService codeUserService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public AuthUserResponseDTO executeAuthUserSignin(AuthUserRequestDTO authUserRequestDTO, int attempt){
+    @Autowired
+    private EmailService emailService;
+
+    public AuthUserResponseDTO executeAuthUserSignin(AuthUserRequestDTO authUserRequestDTO){
         var user = userRepository.findByUsernameIgnoringCase(authUserRequestDTO.username())
                 .orElseThrow( () -> new UserNotFoundException("Username e/ou password estão incorretos"));
 
-        loginUserAttemptService.isBlocked(user);
+        var userAttempts = userAttemptsRepository.findByUserId(user.getId());
+
+        loginUserAttemptService.isBlocked(user, userAttempts);
 
         if(!passwordEncoder.matches(authUserRequestDTO.password(), user.getPassword())) {
-            loginUserAttemptService.failedLogin(attempt, user);
+            loginUserAttemptService.failedLogin(user, userAttempts);
             throw new MyAuthenticationException("Username e/ou password estão incorretos");
         }
 
@@ -76,30 +82,23 @@ public class AuthUserService {
         return new AuthUserResponseDTO(token, refreshToken.getId());
     }
 
-    public ResetPasswordTokenEntity executeAuthUserForgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
-        var user = userRepository.findByEmailIgnoringCase(forgotPasswordRequestDTO.email()).orElseThrow(() ->
+    public void executeAuthUserForgotPassword(String userEmail) {
+        var user = userRepository.findByEmailIgnoringCase(userEmail).orElseThrow(() ->
                 new RecuperationEmailNotFound("Email not found")
         );
 
-        return resetPasswordTokenRepository.save(new ResetPasswordTokenEntity(
-                UUID.randomUUID().toString(),
-                forgotPasswordRequestDTO.email(),
-                Instant.now().plusMillis(resetPasswordTokenExpire).toEpochMilli())
-        );
+        emailService.sendMailToResetPassword(user.getId());
     }
 
     public void executeAuthUserResetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) {
-        var resetPasswordToken = resetPasswordTokenRepository.
-                findByToken(resetPasswordRequestDTO.token().toString()).orElseThrow(() ->
-                        new TokenInvalidException("Token Inválido!")
+        var resetPasswordCode = resetPasswordCodeRepository.
+                findByCode(resetPasswordRequestDTO.code()).orElseThrow(() ->
+                        new CodeInvalidException("Código Inválido!")
                 );
 
-        if (Instant.ofEpochMilli(resetPasswordToken.getExpiresAt()).isBefore(Instant.now()) ){
-            resetPasswordTokenRepository.deleteById(resetPasswordToken.getId());
-            throw new TokenInvalidException("Token está expirado! Envie novamente um email");
-        }
+        codeUserService.resetPasswordCodeIsExpires(resetPasswordCode);
 
-        var user = userRepository.findByEmailIgnoringCase(resetPasswordToken.getEmail())
+        var user = userRepository.findByEmailIgnoringCase(resetPasswordCode.getEmail())
                 .orElseThrow(() -> new RecuperationEmailNotFound("Email not found"));
 
         if(passwordEncoder.matches(resetPasswordRequestDTO.password(), user.getPassword()))
@@ -111,21 +110,20 @@ public class AuthUserService {
         user.setPassword(passwordEncoder.encode(resetPasswordRequestDTO.password()));
         userRepository.save(user);
 
-        resetPasswordTokenRepository.deleteById(resetPasswordToken.getId());
+        resetPasswordCodeRepository.delete(resetPasswordCode);
     }
 
-    public UserConfirmationResponseDTO executeAuthUserConfirmation(TokenUserConfirmationRequestDTO tokenUserConfirmationRequestDTO, UUID userId) {
-        var code = codeConfirmationRepository.findByCodeAndUserId(tokenUserConfirmationRequestDTO.token(), userId).orElseThrow( () ->
-                new TokenInvalidException("Code Invalid!")
+    public UserConfirmationResponseDTO executeAuthUserConfirmation(String requestCode, UUID userId) {
+        var code = confirmationCodeRepository.findByCodeAndUserId(requestCode, userId).orElseThrow( () ->
+                new CodeInvalidException("Code Invalid!")
         );
 
+        codeUserService.confirmationCodeIsExpires(code);
+
         var user = code.getUser();
-
-        codeConfirmationService.isExpires(code);
-
         user.setUserStatus(UserStatusEnum.ACTIVE);
-        codeConfirmationRepository.delete(code);
+        confirmationCodeRepository.delete(code);
 
-        return new UserConfirmationResponseDTO(user.getUsername(), UserStatusEnum.ACTIVE.getDescription());
+        return new UserConfirmationResponseDTO(user.getUsername(), user.getUserStatusEnum().getDescription());
     }
 }

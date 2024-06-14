@@ -1,19 +1,18 @@
 package br.com.evandro.todoList.config.exceptions;
 
+import br.com.evandro.todoList.domains.resetpassword.exceptions.CodeInvalidException;
+import br.com.evandro.todoList.domains.resetpassword.exceptions.RecuperationEmailNotFound;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskAccessNotPermittedException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskFoundException;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
-import br.com.evandro.todoList.domains.user.exceptionsUser.MyAuthenticationException;
-import br.com.evandro.todoList.domains.user.exceptionsUser.UpdatePasswordException;
-import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
-import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
+import br.com.evandro.todoList.domains.user.exceptionsUser.*;
 import br.com.evandro.todoList.dto.exceptions.ErrorResponseDTO;
 import br.com.evandro.todoList.dto.exceptions.HandlerExceptionMethodNotValidDTO;
-import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -101,5 +100,22 @@ public class ExceptionsHandlerController {
     public ResponseEntity handlerUpdatePassword(UpdatePasswordException e){
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ErrorResponseDTO(e.getMessage()));
     }
+
+    @ExceptionHandler(CodeInvalidException.class)
+    public ResponseEntity handlerTokenInvalid(CodeInvalidException e){
+        return ResponseEntity.status(HttpStatusCode.valueOf(498)).body(new ErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(UserBlockedException.class)
+    public ResponseEntity handlerUserBlockedException(UserBlockedException e){
+        return ResponseEntity.status(HttpStatus.LOCKED).body(new ErrorResponseDTO(e.getMessage()));
+    }
+
+    @ExceptionHandler(RecuperationEmailNotFound.class)
+    public ResponseEntity handlerRecuperationEmailNotFound(RecuperationEmailNotFound e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDTO(e.getMessage()));
+    }
+
+
 
 }

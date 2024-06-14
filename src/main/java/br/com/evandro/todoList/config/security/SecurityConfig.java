@@ -25,6 +25,7 @@ public class SecurityConfig{
             "/api/auth/reset-password",
             "/api/auth/forgot-password",
             "/api/auth/refresh-token",
+            "/send-email/reset-password",
             "/api/auth/sign-in"
     };
 

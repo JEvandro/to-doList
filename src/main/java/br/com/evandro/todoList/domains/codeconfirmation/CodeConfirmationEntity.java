@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -26,16 +25,16 @@ public class CodeConfirmationEntity {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private UserEntity user;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 
     @Column(name = "code_expires_at", nullable = false)
-    private Long codeExpiresAt;
+    private Long expiresAt;
 
-    public CodeConfirmationEntity(String code, UUID userId, Long codeExpiresAt){
+    public CodeConfirmationEntity(String code, UUID userId, Long expiresAt){
         setCode(code);
         setUserId(userId);
-        setCodeExpiresAt(codeExpiresAt);
+        setExpiresAt(expiresAt);
     }
 
 }

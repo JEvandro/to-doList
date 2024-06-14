@@ -43,11 +43,8 @@ public class UserEntity {
     @Column(name = "user_status")
     private String userStatus;
 
-    @Column(name = "expires_blocked_at")
-    private Long expiresBlockedAt;
-
-    @Column(name = "token_confirmation")
-    private String tokenConfirmation;
+    @Column(name = "blocked_expires_at")
+    private Long blockedExpiresAt;
 
     @CreationTimestamp
     @Schema(example = "2024-04-22T16:59:10.811838")
@@ -64,7 +61,7 @@ public class UserEntity {
         setUserStatus(userStatus);
     }
 
-    public UserStatusEnum getUserStatus(){
+    public UserStatusEnum getUserStatusEnum(){
         return UserStatusEnum.valueOfStatus(userStatus);
     }
 
