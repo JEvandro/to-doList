@@ -13,7 +13,7 @@ public record AuthUserRequestDTO(
 
         @NotBlank
         @Length(min = 8, max = 100, message = "O campo [password] deve conter de 8 carateres até 100 caracateres no máximo")
-        @Schema(example = "0123456789", minLength = 8, maxLength = 100,requiredMode = Schema.RequiredMode.AUTO)
+        @Schema(example = "0123456789", minLength = 8, maxLength = 100,requiredMode = Schema.RequiredMode.REQUIRED)
         String password
 ){
 }

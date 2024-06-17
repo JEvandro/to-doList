@@ -7,7 +7,9 @@ import br.com.evandro.todoList.dto.user.request.CreateUserRequestDTO;
 import br.com.evandro.todoList.dto.user.request.UpdatePasswordRequestDTO;
 import br.com.evandro.todoList.dto.user.request.UpdateProfileUserRequestDTO;
 import br.com.evandro.todoList.dto.user.response.CreateUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.GenerateUsernameResponseDTO;
 import br.com.evandro.todoList.dto.user.response.GetUserResponseDTO;
+import br.com.evandro.todoList.dto.user.response.UpdateProfileUserResponseDTO;
 import br.com.evandro.todoList.services.user.UserService;
 import br.com.evandro.todoList.services.user.UsernameGeneratorUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "Usuário", description = "Informações do Usuário e suas tasks")
+@Tag(name = "Usuário", description = "Informações e manipulações dos dados do Usuário e suas tasks")
 public class UserController {
 
     @Autowired
@@ -70,6 +72,12 @@ public class UserController {
     }
 
     @GetMapping("/generate-username")
+    @Operation(summary = "Gerador de nome de usuário", description = "Rota responsável por gerar um username aletório para o usuário no momento do cadastro")
+    @ApiResponse(responseCode = "201", content = {
+            @Content(
+                    schema = @Schema(implementation = GenerateUsernameResponseDTO.class)
+            )
+    })
     public ResponseEntity generateUsername(){
         var result = generatorUsernameService.generateUniqueUsername();
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -141,6 +149,20 @@ public class UserController {
     @PatchMapping("/password")
     @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
+    @Operation(summary = "Atualização de senha", description = "Rota responsável por realizar a troca de senha do usuário caso desejado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "406", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
+    })
     public ResponseEntity updatePassword(
             @Valid @RequestBody UpdatePasswordRequestDTO updatePasswordRequestDTO,
             HttpServletRequest request
@@ -153,6 +175,19 @@ public class UserController {
     @PatchMapping("/update-profile")
     @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
+    @Operation(summary = "Atualização de Perfil", description = "Rota responsável por atualizar os dados do usuário como username, name e e-mail, em partes ou em total")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(
+                            schema = @Schema(implementation = UpdateProfileUserResponseDTO.class)
+                    )
+            }),
+            @ApiResponse(responseCode = "404", content = {
+                    @Content(
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            })
+    })
     public ResponseEntity updateProfile(
             @Valid @RequestBody UpdateProfileUserRequestDTO updateProfileUserRequestDTO,
             HttpServletRequest request

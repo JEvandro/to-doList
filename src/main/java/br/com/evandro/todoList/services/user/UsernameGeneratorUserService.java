@@ -1,6 +1,6 @@
 package br.com.evandro.todoList.services.user;
 
-import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.dto.user.response.GenerateUsernameResponseDTO;
 import br.com.evandro.todoList.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,12 +18,12 @@ public class UsernameGeneratorUserService {
     private static final int USERNAME_LENGTH = 32;
     private final Random random = new SecureRandom();
 
-    public String generateUniqueUsername() {
+    public GenerateUsernameResponseDTO generateUniqueUsername() {
         String username;
         do {
             username = generateRandomUsername();
         } while (userRepository.existsByUsername(username));
-        return username;
+        return new GenerateUsernameResponseDTO(username);
     }
 
     private String generateRandomUsername() {

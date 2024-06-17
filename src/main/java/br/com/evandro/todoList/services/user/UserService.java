@@ -143,7 +143,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Object executeUpdateProfile(UpdateProfileUserRequestDTO updateProfileUserRequestDTO, UUID userId) {
+    public UpdateProfileUserResponseDTO executeUpdateProfile(UpdateProfileUserRequestDTO updateProfileUserRequestDTO, UUID userId) {
         var user = findUser(userId);
         boolean x = false;
 
