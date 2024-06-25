@@ -67,7 +67,7 @@ public class JWTProviderRefreshToken {
     public void verifyExpirationTokenRefreshToken(RefreshTokenEntity refreshToken) {
         if (Instant.ofEpochMilli(refreshToken.getExpiresAt()).isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new MyAuthenticationException("Refresh token was expired. Please make a new signin request");
+            throw new MyAuthenticationException("O Refresh Token expirou. Por favor faça outro login");
         }
     }
 

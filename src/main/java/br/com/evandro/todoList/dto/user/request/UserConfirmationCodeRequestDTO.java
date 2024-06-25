@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.Length;
 
 public record UserConfirmationCodeRequestDTO(
 
-        @Schema(example = "364762", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(example = "364762", minLength = 6, maxLength = 6, requiredMode = Schema.RequiredMode.REQUIRED)
         @Length(min = 6, max = 6, message = "O campo [code] deve conter exatamente 6 carateres")
         @NotBlank
         String code

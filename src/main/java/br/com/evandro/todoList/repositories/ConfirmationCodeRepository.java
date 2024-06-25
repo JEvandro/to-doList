@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface ConfirmationCodeRepository extends JpaRepository<CodeConfirmationEntity, UUID> {
 
     Optional<CodeConfirmationEntity> findByCodeAndUserId(String code, UUID userId);
-    boolean findByUserId(UUID userId);
+    Optional<CodeConfirmationEntity> findByUserId(UUID userId);
 }

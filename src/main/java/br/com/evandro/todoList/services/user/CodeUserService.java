@@ -1,7 +1,7 @@
 package br.com.evandro.todoList.services.user;
 
 import br.com.evandro.todoList.domains.codeconfirmation.CodeConfirmationEntity;
-import br.com.evandro.todoList.domains.resetpassword.ResetPasswordTokenEntity;
+import br.com.evandro.todoList.domains.resetpassword.ResetPasswordCodeEntity;
 import br.com.evandro.todoList.domains.resetpassword.exceptions.CodeInvalidException;
 import br.com.evandro.todoList.domains.user.UserEntity;
 import br.com.evandro.todoList.repositories.ConfirmationCodeRepository;
@@ -41,14 +41,18 @@ public class CodeUserService {
         return code;
     }
 
-    public ResetPasswordTokenEntity generateResetPasswordCode(UserEntity user){
+    public ResetPasswordCodeEntity generateResetPasswordCode(UserEntity user){
         var code = generateRandomCode();
         var expiresAt = Instant.now().plusMillis(resetPasswordCodeExpires).toEpochMilli();
-        return resetPasswordCodeRepository.save(new ResetPasswordTokenEntity(code, user.getEmail(), expiresAt, user.getId()));
+        return resetPasswordCodeRepository.save(new ResetPasswordCodeEntity(code, user.getEmail(), expiresAt, user.getId()));
     }
 
 
     private static String generateRandomCode() {
+        if(usedCodes.size() == Math.pow(10,CODE_LENGTH)){
+            usedCodes.clear();
+        }
+
         String code;
         do {
             StringBuilder codeBuilder = new StringBuilder();
@@ -69,7 +73,7 @@ public class CodeUserService {
         }
     }
 
-    public void resetPasswordCodeIsExpires(ResetPasswordTokenEntity code){
+    public void resetPasswordCodeIsExpires(ResetPasswordCodeEntity code){
         if(Instant.now().isAfter(Instant.ofEpochMilli(code.getExpiresAt()))){
             resetPasswordCodeRepository.delete(code);
             throw new CodeInvalidException("code expires! send a new email");

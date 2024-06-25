@@ -9,7 +9,7 @@ public record GetOtherUserResponseDTO(
         @Schema(example = "admin")
         String name,
 
-        @Schema(example = "admin")
+        @Schema(example = "admin1_")
         String username,
 
         @Schema(example = "admin@gmail.com")

@@ -33,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "Usuário", description = "Informações e manipulações dos dados do Usuário e suas tasks")
+@Tag(name = "Usuário", description = "Informações e manipulações dos dados do Usuário e informações de sua lista de task")
 public class UserController {
 
     @Autowired
@@ -86,7 +86,7 @@ public class UserController {
     @GetMapping("/{username}")
     @PreAuthorize("hasRole('USER')")
     @SecurityRequirement(name = "jwt_auth")
-    @Operation(summary = "Perfil do usuário", description = "Rota responsável por mostrar as informações do usuário")
+    @Operation(summary = "Perfil do usuário", description = "Rota responsável por mostrar as informações do usuário requisitado")
     @ApiResponses({
             @ApiResponse(responseCode = "200",content = {
 
@@ -98,7 +98,8 @@ public class UserController {
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
-            })
+            }),
+            @ApiResponse(responseCode = "401")
     })
     public ResponseEntity get(@PathVariable String username, HttpServletRequest request){
         var userId = request.getAttribute("userId");

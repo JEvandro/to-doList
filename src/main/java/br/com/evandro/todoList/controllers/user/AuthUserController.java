@@ -105,7 +105,7 @@ public class AuthUserController {
     }
 
     @PostMapping("/reset-password")
-    @Operation(summary = "Redefinição de senha", description = "Rota responsável por receber o código validar e alterar a senha do usuário")
+    @Operation(summary = "Redefinição de senha", description = "Rota responsável por receber o código, validar e alterar a senha do usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201"),
             @ApiResponse(responseCode = "498", content = {

@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reset_password_token")
+@Table(name = "reset_password_code")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResetPasswordTokenEntity {
+public class ResetPasswordCodeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,7 +30,7 @@ public class ResetPasswordTokenEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    public ResetPasswordTokenEntity(String code, String email, Long expiresAt, UUID userId){
+    public ResetPasswordCodeEntity(String code, String email, Long expiresAt, UUID userId){
         setCode(code);
         setEmail(email);
         setExpiresAt(expiresAt);

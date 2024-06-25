@@ -56,10 +56,10 @@ public class EmailService {
         var confirmationUrl = "http://localhost:8080/api/auth/user-confirmation";
         this.sendSimpleMessage(
                 user.getEmail(),
-                "Confirmation of user",
-                "This is your code of confirmation of the identity of user: " + code + "\n" +
-                        "Expires in ten minutes\n\n" +
-                        "To confirmation your identity, click the link below:\n" + confirmationUrl);
+                "Confirmação de usuário",
+                "Esse é o seu código para confirmação de identidade de usuário: " + code + "\n" +
+                        "Expira em 30 dias\n\n" +
+                        "Para confirmar sua identidade, clique no link abaixo.\n" + confirmationUrl);
     }
 
 }

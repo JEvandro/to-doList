@@ -25,19 +25,19 @@ public class UserEntity {
     private UUID id;
 
     @Column(name = "name", nullable = false)
-    @Schema(example = "Jose Evandro")
+    @Schema(example = "Admin")
     private String name;
 
     @Column(name = "username", nullable = false)
-    @Schema(example = "joseevandro")
+    @Schema(example = "admin")
     private String username;
 
     @Column(name = "email", nullable = false)
-    @Schema(example = "jose@gmail.com")
+    @Schema(example = "admin@gmail.com")
     private String email;
 
     @Column(name = "password", nullable = false)
-    @Schema(example = "0123456789")
+    @Schema(example = "$2a$10$mn9/6lz3jt3xgq2w3JTKeePrsAyN4MgyDoF6w/75S4NOxqh3lUaHO")
     private String password;
 
     @Column(name = "user_status")
@@ -53,14 +53,6 @@ public class UserEntity {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    public UserEntity(String name, String username, String email, String password, UserStatusEnum userStatus){
-        setName(name);
-        setUsername(username);
-        setEmail(email);
-        setPassword(password);
-        setUserStatus(userStatus);
-    }
-
     public UserStatusEnum getUserStatusEnum(){
         return UserStatusEnum.valueOfStatus(userStatus);
     }
@@ -68,6 +60,14 @@ public class UserEntity {
     public void setUserStatus(UserStatusEnum userStatus){
         if(userStatus != null)
             this.userStatus = userStatus.getStatus();
+    }
+
+    public UserEntity(String name, String username, String email, String password, UserStatusEnum userStatus){
+        setName(name);
+        setUsername(username);
+        setEmail(email);
+        setPassword(password);
+        setUserStatus(userStatus);
     }
 
 }

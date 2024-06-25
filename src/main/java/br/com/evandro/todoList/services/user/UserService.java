@@ -17,6 +17,7 @@ import br.com.evandro.todoList.dto.user.response.GetUserResponseDTO;
 import br.com.evandro.todoList.dto.user.response.UpdateProfileUserResponseDTO;
 import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
 import br.com.evandro.todoList.providers.JWTProviderToken;
+import br.com.evandro.todoList.repositories.ConfirmationCodeRepository;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserAttemptsRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
@@ -41,6 +42,9 @@ public class UserService {
     private UserAttemptsRepository userAttemptsRepository;
 
     @Autowired
+    private ConfirmationCodeRepository codeRepository;
+
+    @Autowired
     private JWTProviderToken jwtProviderToken;
 
     @Autowired
@@ -54,11 +58,12 @@ public class UserService {
 
     public CreateUserResponseDTO executeCreate(CreateUserRequestDTO createUserRequestDTO){
 
-        var user = this.userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(
-                createUserRequestDTO.username(),
-                createUserRequestDTO.email());
-
-        if(user.isPresent()) throw new UserFoundException("Usuário com este username e/ou email já existe");
+         if (this.userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(
+                 createUserRequestDTO.username(),
+                 createUserRequestDTO.email()).
+                 isPresent()
+         )
+             throw new UserFoundException("Usuário com este username e/ou email já existe");
 
         var password = passwordEncoder.encode(createUserRequestDTO.password());
 
@@ -89,10 +94,10 @@ public class UserService {
             new UserNotFoundException("Usuário não existe")
         );
 
-        if(!user.getId().equals(userId))
-            return new GetOtherUserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
+        if(user.getId().equals(userId))
+            return new GetUserResponseDTO(user.getId(),user.getName(), user.getUsername(), user.getEmail(), user.getUserStatusEnum().getDescription(), user.getCreatedAt(), user.getUpdateAt());
 
-        return new GetUserResponseDTO(user.getId(),user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
+        return new GetOtherUserResponseDTO(user.getName(), user.getUsername(), user.getEmail(), user.getCreatedAt());
     }
 
     public void executeDelete(UUID userId){
@@ -104,6 +109,12 @@ public class UserService {
             taskRepository.deleteById(task.getId());
         });
 
+        codeRepository.findByUserId(userId).ifPresent((code) ->{
+            codeRepository.delete(code);
+        });
+
+        userAttemptsRepository.delete(userAttemptsRepository.findByUserId(userId));
+
         this.userRepository.deleteById(userId);
     }
 
@@ -112,7 +123,7 @@ public class UserService {
 
         if(listTask.isEmpty()) throw new TaskNotFoundException("Não existe tarefa(s) criada(s) para esse usuário");
 
-        List< AllTasksResponseDTO > listAllTasks = new ArrayList<>();
+        List<AllTasksResponseDTO > listAllTasks = new ArrayList<>();
         listTask.forEach( taskEntity -> {
             listAllTasks.add(new AllTasksResponseDTO(
                     taskEntity.getId(),
@@ -153,9 +164,7 @@ public class UserService {
         }
 
         if(!updateProfileUserRequestDTO.username().isEmpty()) {
-            var index = updateProfileUserRequestDTO.username().indexOf(" ");
-            var username = updateProfileUserRequestDTO.username().substring(0,index);
-            user.setUsername(username);
+            user.setUsername(updateProfileUserRequestDTO.username());
             x = true;
         }
 
