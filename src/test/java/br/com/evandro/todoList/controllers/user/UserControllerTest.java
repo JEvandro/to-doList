@@ -2,6 +2,7 @@ package br.com.evandro.todoList.controllers.user;
 
 import br.com.evandro.todoList.domains.task.TaskEntity;
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.dto.user.request.CreateUserRequestDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
@@ -42,7 +43,8 @@ public class UserControllerTest {
             "TESTE",
             "TESTE",
             "TESTE@GMAIL.COM",
-            "0123456789"
+            "0123456789",
+            UserStatusEnum.PENDENT
     );
 
     private CreateUserRequestDTO request = new CreateUserRequestDTO(

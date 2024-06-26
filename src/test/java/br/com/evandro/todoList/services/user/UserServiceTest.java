@@ -1,25 +1,34 @@
 package br.com.evandro.todoList.services.user;
 
+import br.com.evandro.todoList.domains.refreshtoken.RefreshTokenEntity;
 import br.com.evandro.todoList.domains.task.TaskEntity;
 import br.com.evandro.todoList.domains.task.exceptionsTask.TaskNotFoundException;
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserFoundException;
 import br.com.evandro.todoList.domains.user.exceptionsUser.UserNotFoundException;
+import br.com.evandro.todoList.domains.userattempts.UserAttemptsEntity;
 import br.com.evandro.todoList.dto.task.AllTasksResponseDTO;
 import br.com.evandro.todoList.dto.user.request.CreateUserRequestDTO;
 import br.com.evandro.todoList.dto.user.response.CreateUserResponseDTO;
 import br.com.evandro.todoList.dto.user.response.GetOtherUserResponseDTO;
 import br.com.evandro.todoList.dto.user.response.GetUserResponseDTO;
+import br.com.evandro.todoList.providers.JWTProviderRefreshToken;
+import br.com.evandro.todoList.providers.JWTProviderToken;
 import br.com.evandro.todoList.repositories.TaskRepository;
+import br.com.evandro.todoList.repositories.UserAttemptsRepository;
 import br.com.evandro.todoList.repositories.UserRepository;
+import jakarta.validation.constraints.Email;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +37,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 
@@ -38,6 +48,9 @@ public class UserServiceTest {
     private UserService userService;
 
     @Mock
+    private UserAttemptsRepository userAttemptsRepository;
+
+    @Mock
     private TaskRepository taskRepository;
 
     @Mock
@@ -45,6 +58,15 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JWTProviderToken jwtProviderToken;
+
+    @Mock
+    private JWTProviderRefreshToken jwtProviderRefreshToken;
+
+    @Mock
+    private EmailService emailService;
 
     private UUID userId = UUID.randomUUID();
 
@@ -75,11 +97,17 @@ public class UserServiceTest {
         var userEntity = new UserEntity(createUser.name(),
                 createUser.username(),
                 createUser.email(),
-                passwordEncoder.encode(createUser.password())
+                passwordEncoder.encode(createUser.password()),
+                UserStatusEnum.PENDENT
         );
 
         var userAlreadyCreated = new UserEntity();
+        userAlreadyCreated.setName(createUser.name());
         userAlreadyCreated.setUsername(createUser.username());
+        userAlreadyCreated.setId(userId);
+        userAlreadyCreated.setUserStatus(UserStatusEnum.PENDENT);
+
+        var userAttempts = new UserAttemptsEntity(0, userId);
 
         when(userRepository.findByUsernameIgnoringCaseOrEmailIgnoringCase(
                 createUser.username(),
@@ -87,6 +115,10 @@ public class UserServiceTest {
                 thenReturn(Optional.empty());
 
         when(userRepository.save(userEntity)).thenReturn(userAlreadyCreated);
+        when(userAttemptsRepository.save(userAttempts)).thenReturn(new UserAttemptsEntity());
+        when(jwtProviderToken.generateToken(userAlreadyCreated)).thenReturn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+        when(jwtProviderRefreshToken.generateRefreshToken(userAlreadyCreated.getId())).thenReturn(new RefreshTokenEntity(Instant.now().plusMillis(6000).toEpochMilli(), UUID.randomUUID()));
+        doNothing().when(emailService).sendMailToUserConfirmation(userId);
 
         var result = userService.executeCreate(createUser);
 
@@ -113,6 +145,7 @@ public class UserServiceTest {
 
         var userInformation = new UserEntity();
         userInformation.setId(userId);
+        userInformation.setUserStatus(UserStatusEnum.PENDENT);
 
         when(userRepository.findByUsernameIgnoringCase(username)).thenReturn(Optional.of(userInformation));
 
@@ -127,7 +160,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("should be able get information another user")
     public void should_be_able_get_information_another_user() throws NoSuchFieldException {
-        var anotherUser = new UserEntity(UUID.randomUUID(),"", "teste1", "", "", LocalDateTime.now());
+        var anotherUser = new UserEntity(UUID.randomUUID(),"", "teste1", "", "", "", null, LocalDateTime.now(), LocalDateTime.now());
         var username = "teste1";
 
         when(userRepository.findByUsernameIgnoringCase(username)).thenReturn(Optional.of(anotherUser));

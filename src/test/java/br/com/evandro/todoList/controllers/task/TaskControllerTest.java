@@ -2,6 +2,7 @@ package br.com.evandro.todoList.controllers.task;
 
 import br.com.evandro.todoList.domains.task.TaskEntity;
 import br.com.evandro.todoList.domains.user.UserEntity;
+import br.com.evandro.todoList.domains.user.UserStatusEnum;
 import br.com.evandro.todoList.dto.task.TaskRequestDTO;
 import br.com.evandro.todoList.dto.task.UpdateTaskRequestDTO;
 import br.com.evandro.todoList.repositories.TaskRepository;
@@ -45,14 +46,16 @@ public class TaskControllerTest {
             "TESTE",
             "TESTE",
             "TESTE@GAMIL.COM",
-            "0123456789"
+            "0123456789",
+            UserStatusEnum.PENDENT
     );
 
     private UserEntity user1 = new UserEntity(
             "ANOTHER_TESTE",
             "ANOTHER_TESTE",
             "ANOTHER_TESTE@GMAIL.COM",
-            "0123456789"
+            "0123456789",
+            UserStatusEnum.PENDENT
     );
 
     @Before
